@@ -1,12 +1,12 @@
 import os
 import pymysql
 
-# Coba muat variabel dari file .env (hanya untuk development lokal)
+# Blok pengaman agar aman di Vercel/Production jika python-dotenv tidak terinstal
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    pass  # Di Vercel/production, abaikan jika python-dotenv tidak ada karena env sudah disuntikkan Vercel
+    pass
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'garudasport-rahasia-banget-2026')
