@@ -51,3 +51,5 @@ def create_notification(cursor, user_id, title, message, notif_type='info'):
         INSERT INTO notifications (user_id, title, message, type, is_read)
         VALUES (%s, %s, %s, %s, 0)
     """, (user_id, title, message, notif_type))
+
+    
