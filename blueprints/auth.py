@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import pymysql
 import os
+from urllib.parse import urlparse  # <--- TAMBAHKAN BARIS INI DI SINI
 from werkzeug.security import generate_password_hash, check_password_hash
 
 auth_bp = Blueprint('auth', __name__)
