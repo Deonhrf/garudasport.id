@@ -7,14 +7,29 @@ auth_bp = Blueprint('auth', __name__)
 
 # Fungsi helper untuk koneksi database
 def get_db_connection():
-    return pymysql.connect(
-        host=os.getenv('DB_HOST', 'localhost'),
-        user=os.getenv('DB_USER', 'root'),
-        password=os.getenv('DB_PASSWORD', ''),
-        database=os.getenv('DB_NAME', 'garudasport_db'),
-        cursorclass=pymysql.cursors.DictCursor
-    )
-
+    db_url = os.getenv('DATABASE_URL')
+    
+    if db_url:
+        # Koneksi ke Railway (Production Vercel)
+        parsed_url = urlparse(db_url)
+        return pymysql.connect(
+            host=parsed_url.hostname,
+            user=parsed_url.username,
+            password=parsed_url.password,
+            database=parsed_url.path[1:],
+            port=parsed_url.port or 3306,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+    else:
+        # Koneksi lokal XAMPP (Development)
+        return pymysql.connect(
+            host=os.getenv('DB_HOST', 'localhost'),
+            user=os.getenv('DB_USER', 'root'),
+            password=os.getenv('DB_PASSWORD', ''),
+            database=os.getenv('DB_NAME', 'garudasport_db'),
+            port=int(os.getenv('DB_PORT', 3306)),
+            cursorclass=pymysql.cursors.DictCursor
+        )
 # --- ROUTE REGISTER ---
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
