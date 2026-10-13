@@ -1,0 +1,234 @@
+-- Active: 1776935684274@@127.0.0.1@3306@garudasport_db
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tentang Kami — GarudaSport</title>
+  <meta name="description" content="Cerita di balik GarudaSport, penyedia perlengkapan futsal lokal 100% Original." />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#121212',
+            volt: '#D4FF3F',
+            paper: '#F1F1EF',
+            court: '#2F6FFF',
+            turf: '#FF5A1F',
+          },
+          fontFamily: {
+            display: ['"Archivo Black"', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen">
+
+  <!-- ============ NAVBAR UTAMA ============ -->
+  <header class="bg-white/95 backdrop-blur border-b-2 border-ink sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 h-18 py-4 flex items-center justify-between">
+      <a href="{{ url_for('index') }}" class="font-display text-2xl md:text-3xl tracking-tight flex items-center gap-2">
+        GARUDA<span class="text-volt bg-ink px-1">SPORT</span> 
+      </a>
+      
+<!-- Menu desktop di about.html -->
+        <nav class="hidden lg:flex items-center gap-9 font-semibold text-sm">
+          <a href="{{ url_for('index') }}" class="relative py-2 border-b-2 border-transparent hover:border-ink transition-colors">Home</a>
+          <a href="{{ url_for('index') }}#produk" class="relative py-2 border-b-2 border-transparent hover:border-ink transition-colors">Katalog Futsal</a>
+          
+          <!-- Hanya Tentang Kami yang aktif di halaman ini -->
+          <a href="{{ url_for('about') }}" class="relative py-2 border-b-2 border-ink">Tentang Kami</a>
+        </nav>
+
+      <div class="flex items-center gap-4 md:gap-5">
+        {% if session.get('user_id') %}
+          <a href="{{ url_for('customer.dashboard') }}" class="text-sm font-bold bg-volt px-4 py-2 border-2 border-ink shadow-[2px_2px_0px_#121212] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all">
+            Dashboard Saya
+          </a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" aria-label="Akun saya" class="hidden sm:flex items-center gap-2 text-sm font-semibold hover:text-court transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Masuk</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ KONTEN UTAMA: HERO ABOUT ============ -->
+  <main class="flex-grow w-full">
+    
+    <!-- Hero Section -->
+    <section class="bg-ink text-white border-b-2 border-ink py-20 px-5">
+      <div class="max-w-5xl mx-auto text-center space-y-6">
+        <span class="inline-block bg-volt text-ink font-bold px-3 py-1 text-xs uppercase tracking-widest border-2 border-ink shadow-[3px_3px_0px_#F1F1EF]">
+          Siapa Kami?
+        </span>
+        <h1 class="font-display text-4xl md:text-6xl uppercase leading-[1.1]">
+          Lebih Dari Sekadar<br> Toko Sepatu Futsal.
+        </h1>
+        <p class="text-lg text-white/70 max-w-2xl mx-auto font-medium leading-relaxed">
+          GarudaSport lahir dari semangat keras di atas lapangan vinyl dan rumput sintetis. Kami hadir untuk memastikan setiap pemain futsal Indonesia memiliki akses ke senjata tempur terbaik buatan anak bangsa.
+        </p>
+      </div>
+    </section>
+
+    <!-- Kisah & Visi -->
+    <section class="max-w-7xl mx-auto px-5 md:px-8 py-16 md:py-24">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <!-- Kotak Gambar/Ilustrasi Typografi -->
+        <div class="bg-white border-2 border-ink aspect-square md:aspect-auto md:h-full p-10 flex flex-col justify-center items-center text-center shadow-[10px_10px_0px_#121212] transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+          <h2 class="font-display text-5xl md:text-7xl text-court leading-none mb-4">100%<br><span class="text-ink">LOKAL.</span></h2>
+          <p class="font-bold uppercase tracking-widest text-sm bg-volt px-4 py-2 border-2 border-ink">Pride of Indonesia</p>
+        </div>
+
+        <!-- Teks Cerita -->
+        <div class="space-y-6">
+          <h2 class="font-display text-3xl md:text-4xl uppercase">Misi Kami Jelas: Mendukung Talenta Lokal.</h2>
+          <div class="space-y-4 text-ink/80 leading-relaxed">
+            <p>
+              Berawal dari sulitnya mencari sepatu futsal lokal yang dijamin keasliannya, GarudaSport didirikan pada tahun 2026. Kami percaya bahwa kualitas *brand* lokal saat ini sudah sangat mampu bersaing di level internasional.
+            </p>
+            <p>
+              Merek-merek seperti <strong class="text-ink">Specs, Ortuseight, dan Mills</strong> bukan hanya sekadar nama, melainkan bukti nyata bahwa industri olahraga Indonesia sedang berada di titik keemasannya. Tugas kami adalah mengantarkan mahakarya tersebut langsung ke kaki Anda.
+            </p>
+          </div>
+          <div class="pt-4">
+            <a href="{{ url_for('catalog') }}" class="inline-block bg-ink text-white font-bold uppercase text-sm px-8 py-4 border-2 border-ink shadow-[4px_4px_0px_#D4FF3F] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+              Jelajahi Katalog Kami &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kenapa Memilih Kami (3 Nilai Utama) -->
+    <section class="bg-white border-y-2 border-ink py-16 md:py-24">
+      <div class="max-w-7xl mx-auto px-5 md:px-8">
+        <div class="text-center mb-12">
+          <h2 class="font-display text-3xl md:text-4xl uppercase mb-3">Kenapa Belanja di Sini?</h2>
+          <p class="text-ink/60 font-medium">Tiga alasan mengapa ribuan pemain futsal mempercayakan sepatunya pada kami.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+          <!-- Card 1 -->
+          <div class="bg-paper border-2 border-ink p-8 shadow-[6px_6px_0px_#121212] hover:-translate-y-2 transition-transform">
+            <div class="w-14 h-14 bg-volt border-2 border-ink rounded-full flex items-center justify-center mb-6 shadow-[2px_2px_0px_#121212]">
+              <span class="font-display text-xl">1</span>
+            </div>
+            <h3 class="font-bold text-lg mb-3">100% Original & Resmi</h3>
+            <p class="text-ink/70 text-sm leading-relaxed">
+              Kami tidak menoleransi barang palsu (KW). Setiap sepatu yang Anda beli dilengkapi tag resmi pabrik dan garansi uang kembali jika terbukti tidak asli.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="bg-paper border-2 border-ink p-8 shadow-[6px_6px_0px_#121212] hover:-translate-y-2 transition-transform">
+            <div class="w-14 h-14 bg-court border-2 border-ink rounded-full flex items-center justify-center mb-6 shadow-[2px_2px_0px_#121212]">
+              <span class="font-display text-xl text-white">2</span>
+            </div>
+            <h3 class="font-bold text-lg mb-3">Harga Paling Fair</h3>
+            <p class="text-ink/70 text-sm leading-relaxed">
+              Tidak ada biaya tersembunyi. Kami bekerja sama langsung dengan distributor resmi sehingga harga yang Anda dapatkan adalah harga terbaik di pasaran.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="bg-paper border-2 border-ink p-8 shadow-[6px_6px_0px_#121212] hover:-translate-y-2 transition-transform">
+            <div class="w-14 h-14 bg-turf border-2 border-ink rounded-full flex items-center justify-center mb-6 shadow-[2px_2px_0px_#121212]">
+              <span class="font-display text-xl text-white">3</span>
+            </div>
+            <h3 class="font-bold text-lg mb-3">Pengiriman Kilat</h3>
+            <p class="text-ink/70 text-sm leading-relaxed">
+              Pesan sebelum jam 15:00 WIB, sepatu Anda akan diproses dan dikirim di hari yang sama. Jadwal tanding Anda akhir pekan ini aman!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  
+  <!-- ============ VALUE PROPOSITION ============ -->
+  <section class="bg-ink text-white">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 py-14 md:py-16 grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/15">
+      <div class="flex items-start gap-4 py-6 sm:py-0 sm:pr-8">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+        <div>
+          <h3 class="font-bold mb-1.5">100% Produk Lokal Berkualitas</h3>
+          <p class="text-white/60 text-sm">Diproduksi oleh pengrajin lokal dengan standar material setara brand internasional.</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-4 py-6 sm:py-0 sm:px-8">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+        <div>
+          <h3 class="font-bold mb-1.5">Pengiriman Cepat</h3>
+          <p class="text-white/60 text-sm">Diproses dalam 1x24 jam dan dikirim ke seluruh Indonesia lewat mitra logistik terpercaya.</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-4 py-6 sm:py-0 sm:pl-8">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <div>
+          <h3 class="font-bold mb-1.5">Garansi Original</h3>
+          <p class="text-white/60 text-sm">Setiap pasang dilengkapi kode keaslian dan jaminan uang kembali jika terbukti tidak original.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="bg-white border-t-2 border-ink">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 py-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <p class="font-display text-xl mb-3">GARUDA<span class="text-volt bg-ink px-1">SPORT</span></p>
+        <p class="text-ink/60 text-sm max-w-xs">Sepatu futsal lokal untuk pemain yang serius soal permainannya.</p>
+      </div>
+      <div>
+        <h4 class="font-bold mb-3 text-sm">Navigasi</h4>
+        <ul class="space-y-2 text-sm text-ink/60">
+          <li><a href="{{ url_for('index') }}" class="hover:text-ink">Home</a></li>
+          <li><a href="{{ url_for('catalog') }}" class="hover:text-ink">Katalog Futsal</a></li>
+          <li><a href="#" class="hover:text-ink">Koleksi Terbaru</a></li>
+          <li><a href="{{ url_for('about') }}" class="hover:text-ink">Tentang Kami</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold mb-3 text-sm">Bantuan</h4>
+        <ul class="space-y-2 text-sm text-ink/60">
+          <li><a href="#" class="hover:text-ink">Panduan Ukuran</a></li>
+          <li><a href="#" class="hover:text-ink">Pengembalian Barang</a></li>
+          <li><a href="#" class="hover:text-ink">Lacak Pesanan</a></li>
+          <li><a href="#" class="hover:text-ink">Pertanyaan Umum</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold mb-3 text-sm">Kontak</h4>
+        <ul class="space-y-2 text-sm text-ink/60">
+          <li>halo@garudasport.id</li>
+          <li>+62 812-0000-0000</li>
+          <li>Jakarta, Indonesia</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-ink/10">
+      <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 flex flex-col sm:flex-row justify-between gap-2 text-xs text-ink/50">
+        <p>&copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.</p>
+        <p>Dibuat untuk pemain lapangan Indonesia.</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pesanan Saya — GarudaSport</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#121212',
+            volt: '#D4FF3F',
+            paper: '#F1F1EF',
+            court: '#2F6FFF',
+            turf: '#FF5A1F',
+          },
+          fontFamily: {
+            display: ['"Archivo Black"', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Alpine.js untuk Dropdown Notifikasi & Interaksi -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen">
+
+  <!-- ============ NAVBAR CUSTOMER UTAMA ============ -->
+  <header class="bg-white border-b-2 border-ink sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 h-18 py-4 flex items-center justify-between">
+      
+      <!-- Kiri: Tombol Garis Tiga (Sidebar) & Logo -->
+      <div class="flex items-center gap-4 ml-2 md:ml-0">
+        <button onclick="toggleSidebar()" class="p-2 border-2 border-ink bg-paper hover:bg-volt transition-colors flex items-center justify-center shadow-[2px_2px_0px_#121212]" title="Menu Navigasi">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+
+        <a href="{{ url_for('customer.dashboard') }}" class="font-display text-2xl md:text-3xl tracking-tight flex items-center gap-2">
+          GARUDA<span class="text-volt bg-ink px-1">SPORT</span> 
+        </a>
+      </div>
+      
+      <!-- Kanan: Kembali, Lonceng Notif, Profil, & Keranjang -->
+      <div class="flex items-center gap-4 md:gap-5">
+
+        
+        <!-- Tautan Kembali ke Pages Sebelumnya -->
+        <button onclick="history.back()" class="hidden md:inline text-sm font-bold border-b-2 border-transparent hover:border-ink transition-colors pb-0.5 cursor-pointer bg-transparent">
+          &larr; Kembali
+        </button>
+
+        <!-- Info Akun -->
+        <div>
+          <span class="hidden sm:inline-block text-sm font-bold bg-volt px-3 py-1.5 border-2 border-ink shadow-[2px_2px_0px_#121212]">
+            Halo, {{ session.nama | default('Akun') }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ SIDEBAR GESER (MENU KIRI) ============ -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-ink/50 z-50 hidden transition-opacity"></div>
+
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r-2 border-ink flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-in-out shadow-[6px_0px_0px_#121212]">
+    <div>
+      <!-- Header Sidebar -->
+      <div class="h-18 px-6 border-b-2 border-ink flex items-center justify-between bg-paper">
+        <span class="font-display text-base uppercase tracking-wider">Menu Akun</span>
+        <button onclick="toggleSidebar()" class="text-ink font-bold text-xl px-2 py-1 border-2 border-ink bg-white hover:bg-volt transition-colors">
+          &times;
+        </button>
+      </div>
+
+      <!-- Daftar Menu Sidebar -->
+      <nav class="p-5 space-y-3 font-bold uppercase text-xs">
+        <a href="{{ url_for('customer.dashboard') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">
+           <span>📊</span> Dashboard Saya
+        </a>
+        
+        <a href="{{ url_for('catalog') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">
+           <span>👟</span> Belanja Sepatu
+        </a>
+        
+        <a href="{{ url_for('customer.order_history') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint == 'customer.order_history' %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           <span>📦</span> Pesanan Saya
+        </a>
+
+        <a href="{{ url_for('chat.customer_chat') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint == 'chat.customer_chat' %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           <span>💬</span> Chat Admin
+        </a>
+        
+        <a href="{{ url_for('customer.profile') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint == 'customer.profile' %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           <span>👤</span> Profil & Pengaturan
+        </a>
+      </nav>
+    </div>
+
+    <!-- Info Bawah Sidebar & Logout -->
+    <div class="p-5 border-t-2 border-ink space-y-3">
+      <div class="bg-paper border-2 border-ink p-3 text-xs">
+        <p class="font-bold uppercase text-ink/50 text-[10px]">Toko Futsal</p>
+        <p class="font-bold text-turf mt-0.5">● GarudaSport ID</p>
+      </div>
+      
+      <!-- Tombol Keluar (Logout) Paling Bawah -->
+      <a href="{{ url_for('auth.logout') }}" class="flex items-center justify-center gap-2 w-full bg-turf text-white px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none hover:bg-ink transition-all text-xs font-bold uppercase">
+        Keluar
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ============ KONTEN UTAMA ============ -->
+  <main class="flex-grow max-w-7xl mx-auto w-full px-5 md:px-8 py-10 md:py-14">
+    
+    <div class="mb-8 border-b-2 border-ink pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <h1 class="font-display text-3xl md:text-4xl uppercase">Pesanan Saya</h1>
+        <p class="text-ink/70 font-medium text-sm mt-1">Lacak status pengiriman dan riwayat transaksi sepatu futsal kamu.</p>
+      </div>
+      <a href="{{ url_for('catalog') }}" class="inline-block bg-ink text-white font-bold px-5 py-2.5 text-sm border-2 border-ink hover:bg-volt hover:text-ink transition-colors shadow-[2px_2px_0px_#121212]">
+        + Belanja Lagi
+      </a>
+    </div>
+
+    <!-- ============ TAB FILTER STATUS ============ -->
+    {% set current_tab = request.args.get('status', 'Semua') %}
+    <div class="flex overflow-x-auto gap-2 pb-4 mb-8 no-scrollbar">
+      <a href="{{ url_for('customer.order_history', status='Semua') }}" 
+         class="px-4 py-2 text-xs font-bold uppercase border-2 border-ink whitespace-nowrap transition-all shadow-[2px_2px_0px_#121212] {% if current_tab == 'Semua' %} bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none {% else %} bg-white hover:bg-paper {% endif %}">
+         Semua
+      </a>
+      <a href="{{ url_for('customer.order_history', status='Menunggu Verifikasi') }}" 
+         class="px-4 py-2 text-xs font-bold uppercase border-2 border-ink whitespace-nowrap transition-all shadow-[2px_2px_0px_#121212] {% if current_tab == 'Menunggu Verifikasi' %} bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none {% else %} bg-white hover:bg-paper {% endif %}">
+         Belum Bayar / Menunggu Verifikasi
+      </a>
+      <a href="{{ url_for('customer.order_history', status='Diproses') }}" 
+         class="px-4 py-2 text-xs font-bold uppercase border-2 border-ink whitespace-nowrap transition-all shadow-[2px_2px_0px_#121212] {% if current_tab == 'Diproses' %} bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none {% else %} bg-white hover:bg-paper {% endif %}">
+         Diproses / Dikemas
+      </a>
+      <a href="{{ url_for('customer.order_history', status='Dikirim') }}" 
+         class="px-4 py-2 text-xs font-bold uppercase border-2 border-ink whitespace-nowrap transition-all shadow-[2px_2px_0px_#121212] {% if current_tab == 'Dikirim' %} bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none {% else %} bg-white hover:bg-paper {% endif %}">
+         Dikirim
+      </a>
+      <a href="{{ url_for('customer.order_history', status='Selesai') }}" 
+         class="px-4 py-2 text-xs font-bold uppercase border-2 border-ink whitespace-nowrap transition-all shadow-[2px_2px_0px_#121212] {% if current_tab == 'Selesai' %} bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none {% else %} bg-white hover:bg-paper {% endif %}">
+         Selesai
+      </a>
+      <a href="{{ url_for('customer.order_history', status='Dibatalkan') }}" 
+         class="px-4 py-2 text-xs font-bold uppercase border-2 border-ink whitespace-nowrap transition-all shadow-[2px_2px_0px_#121212] {% if current_tab == 'Dibatalkan' %} bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none {% else %} bg-white hover:bg-paper {% endif %}">
+         Dibatalkan
+      </a>
+    </div>
+
+    <!-- ============ DAFTAR KARTU PESANAN ============ -->
+    {% if orders %}
+    <div class="space-y-6">
+      {% for order in orders %}
+      <div class="bg-white border-2 border-ink p-6 shadow-[6px_6px_0px_#121212]">
+        
+        <!-- Header Card Pesanan -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-ink/10 pb-4 mb-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wide text-ink/50 block mb-1">ID Pesanan #{{ order.id }}</span>
+            <span class="text-xs font-semibold text-ink/70">{{ order.created_at.strftime('%d %B %Y - %H:%M') if order.created_at else '' }}</span>
+          </div>
+          <div>
+            <!-- Badge Status Pesanan -->
+            <span class="inline-block px-3 py-1 text-xs font-bold uppercase border-2 border-ink 
+              {% if order.status_pesanan == 'Selesai' %} bg-volt text-ink 
+              {% elif order.status_pesanan == 'Dikirim' %} bg-court text-white 
+              {% elif order.status_pesanan == 'Dibatalkan' %} bg-ink text-white 
+              {% elif order.status_pesanan == 'Menunggu Konfirmasi Refund' %} bg-volt text-ink 
+              {% else %} bg-turf text-white {% endif %}">
+              {{ order.status_pesanan }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Detail Pengiriman & Total -->
+        <div class="grid md:grid-cols-2 gap-4 text-sm mb-4">
+          <div>
+            <p class="text-xs font-bold uppercase text-ink/50 mb-1">Informasi Pengiriman</p>
+            <p class="font-bold">No. Telp: <span class="font-normal">{{ order.no_telepon }}</span></p>
+            <p class="text-ink/70 mt-1"><strong>Alamat:</strong> {{ order.alamat_pengiriman }}</p>
+            <p class="text-xs text-ink/60 mt-1">Metode Pembayaran: <span class="font-bold uppercase">{{ order.metode_pembayaran }}</span></p>
+          </div>
+          <div class="md:text-right flex flex-col justify-end">
+            <p class="text-xs font-bold uppercase text-ink/50 mb-1">Total Pembayaran</p>
+            <p class="font-display text-2xl text-court">{{ order.total_harga | rupiah }}</p>
+          </div>
+        </div>
+
+        <!-- Indikator Status Refund (Jika pesanan dibatalkan setelah bayar) -->
+        {% if order.status_pesanan == 'Dibatalkan' and order.status_refund and order.status_refund != 'Belum Ada' %}
+        <div class="mb-4 p-3 bg-paper border-2 border-ink text-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <span class="font-bold uppercase block text-turf">Status Pengembalian Dana (Refund):</span>
+            <span class="text-ink/70">Rekening Tujuan: <strong>{{ order.bank_refund }} - {{ order.no_rekening_refund }}</strong> (a.n {{ order.nama_pemilik_refund }})</span>
+          </div>
+          <span class="px-3 py-1 font-bold uppercase border-2 border-ink {% if order.status_refund == 'Selesai' %}bg-court text-white{% else %}bg-volt text-ink{% endif %}">
+            {{ order.status_refund }}
+          </span>
+        </div>
+        {% endif %}
+
+        <!-- Aksi Pesanan Berdasarkan Statusnya -->
+        <div class="pt-4 border-t-2 border-ink flex flex-wrap items-center justify-between sm:justify-end gap-3 mt-2">
+          
+          <!-- Tombol Lihat Invoice -->
+          <a href="{{ url_for('customer.invoice', order_id=order.id) }}" target="_blank" class="bg-court text-white font-bold px-4 py-2.5 text-xs uppercase tracking-wide border-2 border-ink shadow-[3px_3px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+            📄 Lihat Invoice
+          </a>
+
+          <!-- KONDISI 1: Belum Bayar (Menunggu Pembayaran) -->
+          {% if order.status_pesanan == 'Menunggu Pembayaran' %}
+            <form action="{{ url_for('customer.cancel_order', order_id=order.id) }}" method="POST" onsubmit="return confirm('Apakah kamu yakin ingin membatalkan pesanan ini?');" class="inline-block">
+              <button type="submit" class="bg-turf text-white font-bold px-4 py-2.5 text-xs uppercase tracking-wide border-2 border-ink shadow-[3px_3px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-pointer">
+                Batalkan Pesanan
+              </button>
+            </form>
+
+            <a href="{{ url_for('customer.payment_instruction', order_id=order.id) }}" class="bg-volt text-ink font-bold px-5 py-2.5 text-xs uppercase tracking-wide border-2 border-ink shadow-[3px_3px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+              Instruksi Pembayaran &rarr;
+            </a>
+
+          <!-- KONDISI 2: Sudah Bayar / Sedang Diproses (Menunggu Verifikasi / Diproses) -> Tombol Refund -->
+          {% elif order.status_pesanan == 'Menunggu Verifikasi' or order.status_pesanan == 'Diproses' %}
+            <button type="button" onclick="openRefundModal('{{ order.id }}')" class="bg-turf text-white font-bold px-4 py-2.5 text-xs uppercase tracking-wide border-2 border-ink shadow-[3px_3px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+              Batalkan & Ajukan Refund
+            </button>
+          {% endif %}
+
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <!-- Jika Belum Ada Pesanan / Sesuai Filter -->
+    <div class="bg-white border-2 border-ink p-12 text-center shadow-[6px_6px_0px_#121212] max-w-lg mx-auto">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto text-ink/30 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      <p class="font-bold text-lg mb-1">Tidak Ada Pesanan</p>
+      <p class="text-ink/60 text-sm mb-6">Tidak ditemukan riwayat pesanan dengan status yang dipilih.</p>
+      <a href="{{ url_for('catalog') }}" class="inline-block bg-volt text-ink font-bold px-6 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212]">
+        Mulai Belanja Sekarang
+      </a>
+    </div>
+    {% endif %}
+
+  </main>
+
+  <!-- ============ MODAL FORM REFUND ============ -->
+  <div id="refundModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-ink w-full max-w-md p-6 md:p-8 shadow-[8px_8px_0px_#121212] relative">
+      
+      <div class="flex justify-between items-center border-b-2 border-ink pb-3 mb-4">
+        <h3 class="font-display text-lg uppercase">Formulir Pengajuan Refund</h3>
+        <button onclick="toggleRefundModal()" class="font-bold text-xl hover:text-turf">&times;</button>
+      </div>
+
+      <p class="text-xs text-ink/70 mb-4 leading-relaxed">
+        Silakan isi informasi rekening atau e-wallet di bawah ini. Pengajuan pembatalan dan pengembalian dana Anda akan dikonfirmasi terlebih dahulu oleh Admin.
+      </p>
+      <form id="refundForm" method="POST" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase mb-1">Nama Bank / E-Wallet Tujuan</label>
+          <select name="bank_refund" required class="w-full bg-paper border-2 border-ink px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-volt">
+            <option value="" disabled selected>-- Pilih Bank / E-Wallet --</option>
+            <optgroup label="Bank Transfer">
+              <option value="BCA">Bank BCA</option>
+              <option value="Mandiri">Bank Mandiri</option>
+              <option value="BNI">Bank BNI</option>
+              <option value="BRI">Bank BRI</option>
+              <option value="CIMB Niaga">Bank CIMB Niaga</option>
+              <option value="Permata">Bank Permata</option>
+            </optgroup>
+            <optgroup label="E-Wallet">
+              <option value="GoPay">GoPay</option>
+              <option value="OVO">OVO</option>
+              <option value="DANA">DANA</option>
+              <option value="ShopeePay">ShopeePay</option>
+              <option value="LinkAja">LinkAja</option>
+            </optgroup>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold uppercase mb-1">Nomor Rekening / No. HP E-Wallet</label>
+          <input type="text" name="no_rekening_refund" required placeholder="Contoh: 1234567890 / 081234567890" class="w-full bg-paper border-2 border-ink px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-volt">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase mb-1">Nama Pemilik Rekening / Akun</label>
+          <input type="text" name="nama_pemilik_refund" required placeholder="Sesuai buku tabungan / akun e-wallet" class="w-full bg-paper border-2 border-ink px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-volt">
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t-2 border-ink/10">
+          <button type="button" onclick="toggleRefundModal()" class="px-4 py-2 border-2 border-ink text-xs font-bold uppercase bg-paper cursor-pointer">Batal</button>
+          <button type="submit" class="px-4 py-2 border-2 border-ink text-xs font-bold uppercase bg-turf text-white shadow-[2px_2px_0px_#121212] cursor-pointer">Kirim Pengajuan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT UNTUK SIDEBAR & MODAL -->
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    }
+
+    function openRefundModal(orderId) {
+      const modal = document.getElementById('refundModal');
+      const form = document.getElementById('refundForm');
+      form.action = `/customer/order/refund/${orderId}`;
+      modal.classList.remove('hidden');
+    }
+
+    function toggleRefundModal() {
+      const modal = document.getElementById('refundModal');
+      modal.classList.toggle('hidden');
+    }
+  </script>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="bg-white border-t-2 border-ink mt-auto">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 text-center text-xs text-ink/50 font-semibold">
+      &copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.
+    </div>
+  </footer>
+
+</body>
+</html>

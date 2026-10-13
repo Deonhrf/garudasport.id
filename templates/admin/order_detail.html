@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verifikasi Pesanan #{{ order.id }} — Admin GarudaSport</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#121212',
+            volt: '#D4FF3F',
+            paper: '#F1F1EF',
+            court: '#2F6FFF',
+            turf: '#FF5A1F',
+          },
+          fontFamily: {
+            display: ['"Archivo Black"', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen">
+
+  <!-- ============ NAVBAR ADMIN UTAMA ============ -->
+  <header class="bg-white border-b-2 border-ink sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 h-18 py-4 flex items-center justify-between">
+      
+      <!-- Kiri: Tombol Garis Tiga & Logo Admin -->
+      <div class="flex items-center gap-4 ml-2 md:ml-0">
+        <!-- Tombol Garis Tiga (Hamburger) -->
+        <button onclick="toggleSidebar()" class="p-2 border-2 border-ink bg-paper hover:bg-volt transition-colors flex items-center justify-center shadow-[2px_2px_0px_#121212]" title="Menu Navigasi">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+
+        <a href="{{ url_for('admin.dashboard') }}" class="font-display text-2xl md:text-3xl tracking-tight flex items-center gap-2">
+          GARUDA<span class="text-volt bg-ink px-1">SPORT</span> 
+          <span class="text-xs bg-turf text-white px-2 py-0.5 border border-ink uppercase">Admin</span>
+        </a>
+      </div>
+      
+      <!-- Navigasi Kanan (Tanpa Lonceng & Tanpa Logout) -->
+      <div class="flex items-center gap-4 md:gap-6">
+        <!-- Tombol Kembali ke Halaman Sebelumnya -->
+        <button onclick="history.back()" class="hidden sm:inline text-sm font-bold border-b-2 border-transparent hover:border-ink transition-colors pb-0.5 cursor-pointer">
+          &larr; Kembali
+        </button>
+
+        <!-- Info Admin -->
+        <div>
+          <span class="text-sm font-bold bg-volt px-3 py-1.5 border-2 border-ink shadow-[2px_2px_0px_#121212]">
+            Halo, {{ session.nama }}
+          </span>
+        </div>
+      </div>
+      
+    </div>
+  </header>
+
+  <!-- ============ SIDEBAR GESER (MENU KIRI) ============ -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-ink/50 z-50 hidden transition-opacity"></div>
+
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r-2 border-ink flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-in-out shadow-[6px_0px_0px_#121212]">
+    <div>
+      <!-- Header Sidebar -->
+      <div class="h-18 px-6 border-b-2 border-ink flex items-center justify-between bg-paper">
+        <span class="font-display text-base uppercase tracking-wider">Menu Navigasi</span>
+        <button onclick="toggleSidebar()" class="text-ink font-bold text-xl px-2 py-1 border-2 border-ink bg-white hover:bg-volt transition-colors">
+          &times;
+        </button>
+      </div>
+
+      <!-- Daftar Menu -->
+      <nav class="p-5 space-y-3 font-bold uppercase text-xs">
+        <a href="{{ url_for('admin.dashboard') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint == 'admin.dashboard' %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           <span>📊</span> Dashboard Utama
+        </a>
+
+        <!-- Menu Laporan Penjualan -->
+        <a href="{{ url_for('admin.sales_reports') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint == 'admin.sales_reports' %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           <span>📈</span> Laporan Penjualan
+        </a>
+
+        <a href="{{ url_for('chat.admin_chats') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['chat.admin_chats', 'chat.admin_chat_detail'] %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           <span>💬</span> Chat Pelanggan
+        </a>
+        
+        <a href="{{ url_for('admin.manage_orders') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['admin.manage_orders', 'admin.verify_order'] %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           <span>📦</span> Kelola Pesanan & Transaksi
+        </a>
+        
+        <a href="{{ url_for('admin.manage_products') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['admin.manage_products', 'admin.add_product', 'admin.edit_product'] %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           <span>👟</span> Katalog Produk
+        </a>
+        
+        <a href="{{ url_for('admin.manage_customers') }}" 
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['admin.manage_customers', 'admin.customer_orders'] %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           <span>👥</span> Daftar Pelanggan
+        </a>
+      </nav>
+    </div>
+
+    <!-- Info Bawah Sidebar -->
+    <div class="p-5 border-t-2 border-ink">
+      <div class="bg-paper border-2 border-ink p-3 text-xs">
+        <p class="font-bold uppercase text-ink/50 text-[10px]">Sistem Toko</p>
+        <p class="font-bold text-turf mt-0.5">● GarudaSport Admin v1.0</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ KONTEN UTAMA VERIFIKASI PESANAN ============ -->
+  <main class="flex-grow max-w-4xl mx-auto w-full px-5 md:px-8 py-10">
+    
+    <!-- Flash Message -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-6 space-y-2">
+          {% for category, message in messages %}
+            <div class="px-5 py-3 text-sm font-bold border-2 border-ink bg-volt text-ink shadow-[4px_4px_0px_#121212]">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="bg-white border-2 border-ink p-6 md:p-8 shadow-[8px_8px_0px_#121212] space-y-8">
+      
+      <!-- Header Detail -->
+      <div class="border-b-2 border-ink pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="bg-volt text-ink text-xs font-bold px-2.5 py-1 uppercase border border-ink inline-block mb-1">Pesanan #{{ order.id }}</span>
+          <h1 class="font-display text-2xl uppercase">Detail & Verifikasi Pesanan</h1>
+        </div>
+        <div>
+          <span class="inline-block px-3 py-1 text-xs font-bold uppercase border-2 border-ink 
+            {% if order.status_pesanan == 'Selesai' %} bg-volt text-ink 
+            {% elif order.status_pesanan == 'Menunggu Konfirmasi' %} bg-turf text-white 
+            {% else %} bg-court text-white {% endif %}">
+            Status: {{ order.status_pesanan }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Informasi Pelanggan & Pengiriman -->
+      <div class="grid md:grid-cols-2 gap-6 text-sm bg-paper border-2 border-ink p-5">
+        <div>
+          <p class="font-bold uppercase text-xs text-ink/50 mb-1">Informasi Pembeli</p>
+          <p class="font-bold text-base">{{ order.customer_name }}</p>
+          <p class="text-ink/70">{{ order.email }}</p>
+          <p class="text-ink/70">No. Telp: <strong>{{ order.no_telepon }}</strong></p>
+        </div>
+        <div>
+          <p class="font-bold uppercase text-xs text-ink/50 mb-1">Alamat & Pengiriman</p>
+          <p class="text-ink/80">{{ order.alamat_pengiriman }}</p>
+          <p class="mt-2 text-xs">Metode Pembayaran: <strong class="uppercase text-court">{{ order.metode_pembayaran }}</strong></p>
+        </div>
+      </div>
+
+      <!-- Daftar Produk yang Dibeli -->
+      <div>
+        <h3 class="font-display text-base uppercase mb-3">Produk yang Dipesan</h3>
+        <div class="border-2 border-ink divide-y-2 divide-ink">
+          {% for item in items %}
+          <div class="p-4 flex items-center gap-4 bg-white">
+            <div class="w-16 h-16 bg-paper border-2 border-ink shrink-0 overflow-hidden">
+              <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.product_name }}" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-grow">
+              <p class="text-[10px] font-bold uppercase text-ink/50">{{ item.brand }}</p>
+              <h4 class="font-bold text-sm">{{ item.product_name }}</h4>
+              <p class="text-xs text-ink/70">Ukuran: <strong>{{ item.size }}</strong> | Jumlah: <strong>{{ item.quantity }}x</strong></p>
+            </div>
+            <div class="text-right font-display text-sm text-court">
+              {{ (item.price * item.quantity) | rupiah }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="flex justify-between items-center bg-ink text-white p-4 font-display border-2 border-t-0 border-ink">
+          <span>TOTAL PEMBAYARAN</span>
+          <span class="text-xl text-volt">{{ order.total_harga | rupiah }}</span>
+        </div>
+      </div>
+
+      <!-- Bukti Pembayaran (Jika Ada) -->
+      {% if order.bukti_pembayaran %}
+      <div class="border-2 border-ink p-5 bg-paper">
+        <h3 class="font-display text-sm uppercase mb-2">Bukti Pembayaran dari Pelanggan:</h3>
+        <div class="max-w-xs border-2 border-ink bg-white p-2 shadow-[4px_4px_0px_#121212]">
+          <a href="{{ url_for('static', filename='uploads/bukti/' + order.bukti_pembayaran) }}" target="_blank">
+            <img src="{{ url_for('static', filename='uploads/bukti/' + order.bukti_pembayaran) }}" alt="Bukti Bayar" class="w-full h-auto object-contain hover:opacity-90">
+          </a>
+        </div>
+        <p class="text-xs text-ink/60 mt-2">Klik gambar untuk memperbesar.</p>
+      </div>
+      {% endif %}
+
+      <!-- Form Ubah Status / Konfirmasi oleh Admin -->
+      <div class="pt-4 border-t-2 border-ink">
+        <form action="{{ url_for('admin.verify_order', order_id=order.id) }}" method="POST" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-ink/70 mb-2">Ubah Status Pesanan:</label>
+            <select name="status_pesanan" class="w-full bg-paper border-2 border-ink p-3 text-sm font-bold uppercase focus:outline-none cursor-pointer">
+              <option value="Menunggu Konfirmasi" {% if order.status_pesanan == 'Menunggu Konfirmasi' %}selected{% endif %}>Menunggu Konfirmasi</option>
+              <option value="Diproses" {% if order.status_pesanan == 'Diproses' %}selected{% endif %}>Diproses (Pembayaran Valid)</option>
+              <option value="Dikirim" {% if order.status_pesanan == 'Dikirim' %}selected{% endif %}>Dikirim (Dalam Perjalanan)</option>
+              <option value="Selesai" {% if order.status_pesanan == 'Selesai' %}selected{% endif %}>Selesai</option>
+              <option value="Dibatalkan" {% if order.status_pesanan == 'Dibatalkan' %}selected{% endif %}>Dibatalkan</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full bg-volt text-ink font-display uppercase tracking-wider py-4 border-2 border-ink shadow-[4px_4px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-sm">
+            Simpan & Perbarui Status &rarr;
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="bg-white border-t-2 border-ink py-5 text-center text-xs text-ink/50 font-semibold mt-auto">
+    &copy; 2026 GarudaSport Admin Panel. Seluruh hak cipta dilindungi.
+  </footer>
+
+  <!-- SCRIPT JAVASCRIPT UNTUK SIDEBAR -->
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    }
+  </script>
+</body>
+</html>

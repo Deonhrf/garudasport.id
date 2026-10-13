@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instruksi Pembayaran — GarudaSport</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { ink: '#121212', volt: '#D4FF3F', paper: '#F1F1EF', court: '#2F6FFF', turf: '#FF5A1F' },
+          fontFamily: { display: ['"Archivo Black"', 'sans-serif'], body: ['Inter', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-paper text-ink font-body antialiased min-h-screen flex flex-col">
+  
+  <!-- ============ NAVBAR ============ -->
+  <header class="bg-white border-b-2 border-ink sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 h-18 py-4 flex items-center justify-between">
+      
+      <!-- Bagian Kiri: Logo -->
+      <a href="{{ url_for('index') }}" class="font-display text-2xl md:text-3xl tracking-tight">
+        GARUDA<span class="text-volt bg-ink px-1">SPORT</span>
+      </a>
+      
+      <!-- Bagian Kanan: Menu Navigasi & Profil -->
+      <div class="flex items-center gap-5 md:gap-8">
+        <button onclick="history.back()" class="hidden md:inline text-sm font-bold border-b-2 border-transparent hover:border-ink transition-colors pb-0.5 cursor-pointer bg-transparent">
+          &larr; Kembali
+        </button>
+        
+        <a href="{{ url_for('customer.order_history') }}" aria-label="Profil saya" class="hidden sm:flex items-center gap-2 text-sm font-bold bg-volt px-4 py-2 border-2 border-ink shadow-[2px_2px_0px_#121212] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>{{ session.nama }}</span>
+        </a>
+      </div>
+      
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-5 md:px-8 py-10 flex-grow w-full">
+    
+    <!-- Notifikasi Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-8 space-y-2">
+          {% for category, message in messages %}
+            <div class="px-5 py-4 text-sm font-bold border-2 border-ink {% if category == 'danger' %}bg-turf text-white{% else %}bg-volt text-ink{% endif %} shadow-[4px_4px_0px_#121212]">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="bg-white border-2 border-ink p-6 md:p-8 shadow-[8px_8px_0px_#121212] space-y-6">
+      
+      <div class="border-b-2 border-ink pb-4">
+        <span class="bg-volt text-ink text-xs font-bold px-2.5 py-1 uppercase border border-ink inline-block mb-2">ID Pesanan: #{{ order.id }}</span>
+        <h1 class="font-display text-2xl md:text-3xl uppercase">Selesaikan Pembayaran</h1>
+        <p class="text-sm text-ink/70 mt-1">Metode Pilihan: <strong>{{ order.metode_pembayaran }}</strong></p>
+      </div>
+
+      <!-- ============ KONDISI 1: JIKA METODE TRANSFER BANK ============ -->
+      {% if 'Transfer' in order.metode_pembayaran or 'Bank' in order.metode_pembayaran %}
+      <div class="bg-paper border-2 border-ink p-5 md:p-6 space-y-5">
+        <div>
+          <h3 class="font-display text-sm md:text-base uppercase text-ink/70 mb-1">Silakan Transfer Tepat Sebesar:</h3>
+          <p class="font-display text-4xl text-court">{{ order.total_harga | rupiah }}</p>
+        </div>
+        
+        <div class="pt-5 border-t-2 border-ink space-y-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-ink/70">Tujuan Transfer:</p>
+          
+          <!-- Kartu Bank BCA -->
+          <div class="bg-white border-2 border-ink p-4 md:p-5 flex items-center justify-between shadow-[4px_4px_0px_#121212] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-default">
+            <div>
+              <p class="text-xs font-bold uppercase text-ink/50 mb-1">Bank BCA</p>
+              <p class="font-display text-2xl md:text-3xl tracking-widest mb-1">8732 0910 22</p>
+              <p class="text-xs font-bold">a.n. GarudaSport</p>
+            </div>
+            <div class="text-court/20 hidden sm:block">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+            </div>
+          </div>
+
+          <!-- Kartu Bank Mandiri -->
+          <div class="bg-white border-2 border-ink p-4 md:p-5 flex items-center justify-between shadow-[4px_4px_0px_#121212] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-default">
+            <div>
+              <p class="text-xs font-bold uppercase text-ink/50 mb-1">Bank Mandiri</p>
+              <p class="font-display text-2xl md:text-3xl tracking-widest mb-1">1650 0293 8810</p>
+              <p class="text-xs font-bold">a.n. GarudaSport</p>
+            </div>
+            <div class="text-court/20 hidden sm:block">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edukasi / Panduan Transfer Bank -->
+      <div class="bg-white border-2 border-ink p-4 shadow-[4px_4px_0px_#121212]">
+        <h4 class="font-bold text-xs uppercase mb-2 text-turf">💡 Panduan Transfer Bank:</h4>
+        <ul class="text-xs space-y-1.5 list-disc list-outside ml-4 text-ink/80 font-medium">
+          <li>Pastikan nominal transfer <strong>sama persis</strong> hingga 3 digit terakhir agar sistem mudah memverifikasi.</li>
+          <li>Simpan struk ATM atau <i>screenshot</i> bukti m-banking Anda.</li>
+          <li>Segera unggah bukti pada form di bawah agar pesanan cepat diproses.</li>
+        </ul>
+      </div>
+
+
+      <!-- ============ KONDISI 2: JIKA METODE QRIS ============ -->
+      {% elif 'QRIS' in order.metode_pembayaran or 'qris' in order.metode_pembayaran|lower %}
+      <div class="bg-paper border-2 border-ink p-5 md:p-6 text-center space-y-5">
+        <div>
+          <h3 class="font-display text-sm md:text-base uppercase text-ink/70 mb-2">Scan QRIS Berikut:</h3>
+          <!-- Gambar Dummy QRIS -->
+          <div class="w-48 h-48 mx-auto bg-white border-4 border-ink shadow-[6px_6px_0px_#121212] flex items-center justify-center p-2 mb-4">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Pembayaran-GarudaSport" alt="QRIS GarudaSport" class="w-full h-full object-contain">
+          </div>
+          <p class="text-xs font-bold uppercase text-ink/50 mb-1">Total Tagihan:</p>
+          <p class="font-display text-4xl text-court">{{ order.total_harga | rupiah }}</p>
+          <p class="text-xs font-bold mt-2">a.n. GarudaSport</p>
+        </div>
+      </div>
+
+      <!-- Edukasi / Panduan QRIS -->
+      <div class="bg-white border-2 border-ink p-4 shadow-[4px_4px_0px_#121212]">
+        <h4 class="font-bold text-xs uppercase mb-2 text-court">💡 Panduan Pembayaran QRIS:</h4>
+        <ul class="text-xs space-y-1.5 list-disc list-outside ml-4 text-ink/80 font-medium">
+          <li>Buka aplikasi E-Wallet (Gopay, OVO, DANA, ShopeePay) atau M-Banking Anda.</li>
+          <li>Pilih menu <strong>Scan QR</strong> dan arahkan kamera ke kode di atas (atau <i>upload</i> dari galeri).</li>
+          <li>Pastikan nama <i>merchant</i> yang muncul adalah <strong>GarudaSport</strong>.</li>
+          <li>Ambil <i>screenshot</i> bukti berhasil untuk diunggah ke form di bawah.</li>
+        </ul>
+      </div>
+
+
+      <!-- ============ KONDISI 3: JIKA METODE COD (CASH ON DELIVERY) ============ -->
+      {% else %}
+      <div class="bg-volt border-2 border-ink p-6 md:p-8 text-center shadow-[6px_6px_0px_#121212]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto mb-4 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+        <h3 class="font-display text-2xl uppercase text-ink mb-2">Pesanan COD Diproses!</h3>
+        <p class="text-sm font-medium text-ink/80 leading-relaxed max-w-md mx-auto">
+          Kamu memilih metode <strong>Bayar di Tempat (COD)</strong>. Tidak perlu transfer sekarang. Siapkan uang tunai sebesar:
+        </p>
+        <p class="font-display text-4xl text-court mt-3 mb-1">{{ order.total_harga | rupiah }}</p>
+      </div>
+
+      <!-- Edukasi / Panduan COD -->
+      <div class="bg-white border-2 border-ink p-4 shadow-[4px_4px_0px_#121212]">
+        <h4 class="font-bold text-xs uppercase mb-2 text-turf">💡 Panduan Bayar di Tempat (COD):</h4>
+        <ul class="text-xs space-y-1.5 list-disc list-outside ml-4 text-ink/80 font-medium">
+          <li>Siapkan uang tunai <strong>pas</strong> sesuai nominal di atas untuk memudahkan kurir.</li>
+          <li>Pastikan nomor telepon <strong>{{ order.no_telepon }}</strong> selalu aktif agar kurir bisa menghubungi.</li>
+          <li>Berikan uang kepada kurir <strong>sebelum</strong> membuka segel/paket.</li>
+        </ul>
+      </div>
+
+      <a href="{{ url_for('customer.order_history') }}" class="block text-center mt-6 bg-ink text-white font-display uppercase tracking-wider py-4 border-2 border-ink shadow-[4px_4px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-sm">
+        Lihat Status Pesanan Saya &rarr;
+      </a>
+      {% endif %}
+
+
+      <!-- ============ FORM UPLOAD BUKTI (HANYA MUNCUL JIKA BUKAN COD) ============ -->
+      {% if 'COD' not in order.metode_pembayaran %}
+      <div class="pt-6 border-t-2 border-ink/20 mt-4">
+        <form action="{{ url_for('customer.payment_instruction', order_id=order.id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-ink/70 mb-2">Upload Bukti Pembayaran (Foto/Screenshot):</label>
+            <input type="file" name="bukti_pembayaran" accept="image/*" required class="w-full bg-white border-2 border-ink p-3 text-sm font-medium focus:outline-none focus:bg-paper cursor-pointer file:mr-4 file:py-2 file:px-4 file:border-2 file:border-ink file:bg-volt file:text-ink file:font-bold file:text-xs file:uppercase file:cursor-pointer file:shadow-[2px_2px_0px_#121212] hover:file:translate-x-0.5 hover:file:translate-y-0.5 hover:file:shadow-none transition-all">
+          </div>
+          <button type="submit" class="w-full bg-volt text-ink font-display uppercase tracking-wider py-4 border-2 border-ink shadow-[4px_4px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-sm">
+            Kirim Bukti Pembayaran &rarr;
+          </button>
+        </form>
+      </div>
+      {% endif %}
+
+    </div>
+
+  </main>
+
+  <footer class="bg-white border-t-2 border-ink py-5 text-center text-xs text-ink/50 font-semibold">
+    &copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.
+  </footer>
+
+</body>
+</html>

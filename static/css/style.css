@@ -1,0 +1,56 @@
+/* ---------------------------------------------------------------
+   GarudaSport — custom styles pelengkap Tailwind (CDN)
+   --------------------------------------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Ticker promo — satu gerakan berulang yang halus, bukan efek acak */
+.ticker-track {
+  display: inline-block;
+  animation: ticker-scroll 22s linear infinite;
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* Filter pill — status aktif */
+.filter-btn {
+  background-color: #ffffff;
+  color: #121212;
+}
+
+.filter-btn:hover {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.filter-btn.is-active {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+/* Product card — border berubah warna saat hover, sesuai gaya sportstyle */
+.product-card:hover {
+  border-color: #D4FF3F;
+}
+
+/* Fokus keyboard yang tetap terlihat jelas */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #2F6FFF;
+  outline-offset: 2px;
+}
