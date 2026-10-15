@@ -34,179 +34,154 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Tambahan agar efek scroll meluncur mulus -->
   <style>
     html { scroll-behavior: smooth; }
   </style>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
-<body class="bg-white text-ink font-body antialiased">
+<body class="bg-white text-ink font-body antialiased flex flex-col min-h-screen selection:bg-volt selection:text-ink">
 
   <!-- ============ NAVBAR ============ -->
   <header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b-2 border-ink">
-    <div class="max-w-7xl mx-auto px-5 md:px-8">
-      <div class="flex items-center justify-between h-18 py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 h-16 sm:h-18 py-3 flex items-center justify-between">
 
-        <!-- Logo -->
-        <a href="{{ url_for('index') }}" class="font-display text-2xl md:text-3xl tracking-tight">
-          GARUDA<span class="text-volt bg-ink px-1">SPORT</span>
+      <!-- Logo -->
+      <a href="{{ url_for('index') }}" class="font-display text-xl sm:text-2xl md:text-3xl tracking-tight">
+        GARUDA<span class="text-volt bg-ink px-1">SPORT</span>
+      </a>
+
+      <!-- Menu Desktop -->
+      <nav class="hidden lg:flex items-center gap-8 font-bold text-xs uppercase tracking-wider">
+        <a href="{{ url_for('index') }}" class="py-1 border-b-2 border-ink">Home</a>
+        <a href="#produk" class="py-1 border-b-2 border-transparent hover:border-ink transition-colors">Katalog Futsal</a>
+        <a href="{{ url_for('about') if 'about' in config else '#' }}" class="py-1 border-b-2 border-transparent hover:border-ink transition-colors">Tentang Kami</a>
+      </nav>
+
+      <!-- Aksi Kanan -->
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('auth.login') }}" class="hidden sm:flex items-center gap-2 text-xs font-bold bg-volt px-4 py-2 border-2 border-ink shadow-[2px_2px_0px_#121212] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all uppercase">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Masuk</span>
         </a>
 
-        <!-- Menu desktop -->
-<!-- Menu desktop di index.html -->
-        <nav class="hidden lg:flex items-center gap-9 font-semibold text-sm">
-          <!-- Home aktif (ada garis bawah border-ink) -->
-          <a href="{{ url_for('index') }}" class="relative py-2 border-b-2 border-ink">Home</a>
-          
-          <!-- Katalog Futsal TIDAK aktif (hanya hover) -->
-          <a href="#produk" class="relative py-2 border-b-2 border-transparent hover:border-ink transition-colors">Katalog Futsal</a>
-          
-          <!-- Tentang Kami -->
-          <a href="{{ url_for('about') }}" class="relative py-2 border-b-2 border-transparent hover:border-ink transition-colors">Tentang Kami</a>
-        </nav>
-        <!-- Aksi kanan -->
-        <div class="flex items-center gap-4 md:gap-5">
-          <a href="{{ url_for('auth.login') }}" aria-label="Akun saya" class="hidden sm:flex items-center gap-2 text-sm font-semibold hover:text-court transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span>Masuk</span>
-          </a>
-
-          <!-- Menu mobile toggle -->
-          <button id="menuToggle" aria-label="Buka menu" class="lg:hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="7" x2="20" y2="7"></line>
-              <line x1="4" y1="12" x2="20" y2="12"></line>
-              <line x1="4" y1="17" x2="20" y2="17"></line>
-            </svg>
-          </button>
-        </div>
+        <!-- TOMBOL STRIP TIGA / HAMBURGER RAPI (MOBILE) -->
+        <button id="menuToggle" aria-label="Buka Menu Navigasi" class="lg:hidden p-2 border-2 border-ink bg-paper hover:bg-volt active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-[2px_2px_0px_#121212] flex items-center justify-center">
+          <svg id="menuIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
       </div>
-
-      <!-- Menu mobile -->
-      <nav id="mobileMenu" class="hidden lg:hidden pb-4 flex flex-col gap-3 font-semibold text-sm border-t border-ink/10 pt-3">
-        <a href="{{ url_for('index') }}" class="py-1">Home</a>
-        <!-- REVISI 1 (Mobile): Mengarah ke #produk -->
-        <a href="#produk" class="py-1">Katalog Futsal</a>
-        <a href="#" class="py-1">Koleksi Terbaru</a>
-        <a href="#" class="py-1">Tentang Kami</a>
-        <a href="{{ url_for('auth.login') }}" class="py-1">Masuk</a>
-      </nav>
     </div>
+
+    <!-- Dropdown Menu Mobile -->
+    <nav id="mobileMenu" class="hidden lg:hidden bg-paper border-t-2 border-ink px-4 py-4 flex flex-col gap-2.5 font-bold uppercase text-xs">
+      <a href="{{ url_for('index') }}" class="px-3 py-2 bg-volt border-2 border-ink shadow-[2px_2px_0px_#121212]">Home</a>
+      <a href="#produk" onclick="toggleMobileMenu()" class="px-3 py-2 bg-white border-2 border-ink shadow-[2px_2px_0px_#121212]">Katalog Futsal</a>
+      <a href="{{ url_for('auth.login') }}" class="px-3 py-2 bg-turf text-white border-2 border-ink shadow-[2px_2px_0px_#121212]">Masuk Ke Akun</a>
+    </nav>
   </header>
 
   <!-- ============ TICKER PROMO ============ -->
-  <div class="bg-ink text-white overflow-hidden">
-    <div class="ticker-track py-2 text-xs md:text-sm font-semibold tracking-wide whitespace-nowrap">
-      <span class="mx-6">FUTSAL SZN '26 SUDAH DIBUKA</span>
-      <span class="mx-6 text-volt">•</span>
-      <span class="mx-6">GRATIS ONGKIR MIN. RP 500.000</span>
-      <span class="mx-6 text-volt">•</span>
-      <span class="mx-6">100% PRODUK LOKAL, 100% ORIGINAL</span>
-      <span class="mx-6 text-volt">•</span>
-      <span class="mx-6">FUTSAL SZN '26 SUDAH DIBUKA</span>
-      <span class="mx-6 text-volt">•</span>
-      <span class="mx-6">GRATIS ONGKIR MIN. RP 500.000</span>
-      <span class="mx-6 text-volt">•</span>
-      <span class="mx-6">100% PRODUK LOKAL, 100% ORIGINAL</span>
-      <span class="mx-6 text-volt">•</span>
+  <div class="bg-ink text-white overflow-hidden border-b-2 border-ink">
+    <div class="py-2 text-[11px] sm:text-xs font-bold tracking-widest uppercase whitespace-nowrap flex justify-around">
+      <span>⚡ FUTSAL SZN '26 SUDAH DIBUKA</span>
+      <span class="hidden sm:inline text-volt">•</span>
+      <span class="hidden sm:inline">GRATIS ONGKIR MIN. RP 500.000</span>
+      <span class="text-volt">•</span>
+      <span>100% ORIGINAL LOKAL</span>
     </div>
   </div>
 
   <!-- ============ HERO BANNER ============ -->
   <section class="relative bg-paper border-b-2 border-ink overflow-hidden">
-    <div class="max-w-7xl mx-auto px-5 md:px-8 py-14 md:py-20 grid md:grid-cols-2 gap-10 items-center">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-10 sm:py-16 grid md:grid-cols-2 gap-8 items-center">
       <div class="order-2 md:order-1">
-        <p class="font-semibold text-sm text-court mb-3">Koleksi Futsal Terbaru</p>
-        <h1 class="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.05] mb-6">
+        <span class="inline-block font-bold text-xs uppercase bg-court text-white px-2.5 py-1 border border-ink shadow-[2px_2px_0px_#121212] mb-3">
+          Koleksi Futsal Terbaru
+        </span>
+        <h1 class="font-display text-3xl sm:text-5xl md:text-6xl leading-[1.05] mb-4 sm:mb-6 uppercase">
           Melangkah Tegas<br />Di Setiap Lapangan.
         </h1>
-        <p class="text-ink/70 text-base md:text-lg max-w-md mb-8">
-          Sepatu futsal rancangan lokal dengan grip presisi untuk lapangan indoor
-          maupun turf. Dibuat untuk pemain yang bermain habis-habisan.
+        <p class="text-ink/70 text-xs sm:text-base max-w-md mb-6 font-medium leading-relaxed">
+          Sepatu futsal rancangan lokal dengan grip presisi untuk lapangan indoor maupun turf. Dibuat untuk pemain yang bermain habis-habisan.
         </p>
-        <div class="flex flex-wrap items-center gap-4">
-          <!-- REVISI 1: Tombol Hero juga mengarah ke #produk -->
-          <a href="{{ url_for('auth.login') }}" class="inline-flex items-center gap-2 bg-ink text-white font-bold px-7 py-3.5 hover:bg-volt hover:text-ink transition-colors">
-            Jelajahi Koleksi
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        <div class="flex flex-wrap items-center gap-3">
+          <a href="{{ url_for('auth.login') }}" class="inline-flex items-center gap-2 bg-ink text-white font-bold text-xs sm:text-sm px-5 py-3 sm:px-6 sm:py-3.5 border-2 border-ink shadow-[3px_3px_0px_#D4FF3F] hover:bg-volt hover:text-ink active:translate-x-0.5 active:translate-y-0.5 transition-all uppercase">
+            Jelajahi Koleksi &rarr;
           </a>
-          <a href="#produk" class="font-bold px-2 py-3.5 border-b-2 border-ink hover:border-court hover:text-court transition-colors">
-            Lihat Katalog Futsal
+          <a href="#produk" class="font-bold text-xs sm:text-sm px-4 py-3 border-2 border-ink bg-white shadow-[2px_2px_0px_#121212] hover:bg-volt transition-all uppercase">
+            Lihat Katalog
           </a>
         </div>
       </div>
 
       <div class="order-1 md:order-2 relative flex justify-center items-center">
-        <div class="absolute w-52 h-52 md:w-72 md:h-72 bg-neon rounded-full -z-10 blur-2xl opacity-60"></div>
+        <div class="absolute w-44 h-44 sm:w-64 sm:h-64 bg-volt rounded-full -z-10 blur-2xl opacity-60"></div>
         <img 
           src="{{ url_for('static', filename='uploads/sepatu-banner.png') }}" 
           alt="Sepatu Futsal GarudaSport" 
-          class="relative z-10 w-full max-w-md drop-shadow-[0_25px_25px_rgba(0,0,0,0.8)] rotate-[-10deg] hover:rotate-0 transition-transform duration-700 ease-out rounded-2xl object-cover"
+          class="relative z-10 w-full max-w-sm sm:max-w-md drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)] -rotate-6 hover:rotate-0 transition-transform duration-500 ease-out p-2"
           onerror="this.src='https://placehold.co/600x600/121212/D4FF3F?text=GARUDA+SPORT&font=montserrat'"
         >
       </div>
     </div>
   </section>
 
-  <!-- ============ FILTER KATEGORI + GRID PRODUK ============ -->
-  <section id="produk" class="max-w-7xl mx-auto px-5 md:px-8 py-14 md:py-20">
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+  <!-- ============ KATALOG PRODUK ============ -->
+  <section id="produk" class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-10 sm:py-16">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-6 sm:mb-8 border-b-2 border-ink pb-4">
       <div>
-        <h2 class="font-display text-3xl md:text-4xl mb-2">Katalog Futsal Terpilih</h2>
-        <p class="text-ink/60 max-w-lg">Pilih berdasarkan merek unggulan untuk gaya permainan andalanmu.</p>
+        <h2 class="font-display text-2xl sm:text-4xl uppercase">Katalog Futsal Terpilih</h2>
+        <p class="text-ink/60 text-xs sm:text-sm font-medium mt-1">Pilih berdasarkan merek unggulan untuk gaya permainan andalanmu.</p>
       </div>
-      <!-- Tautan "Lihat Semua" di kanan atas sudah dihapus (Revisi 2) -->
     </div>
 
-
-    <!-- Grid produk -->
-    <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
+    <!-- GRID PRODUK UNTUK MOBILE & DESKTOP (SAFE IMAGE CONTAIN) -->
+    <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
       {% for p in products %}
-      <article class="product-card group border-2 border-ink bg-white flex flex-col transition-colors">
+      <article class="border-2 border-ink bg-white flex flex-col group shadow-[4px_4px_0px_#121212] sm:shadow-[6px_6px_0px_#121212] hover:translate-x-0.5 hover:-translate-y-0.5 transition-all">
         
-        <div class="relative overflow-hidden bg-paper aspect-square border-b-2 border-ink">
+        <!-- WADAH GAMBAR PRODUK UTUH (OBJECT-CONTAIN) -->
+        <div class="relative w-full aspect-square bg-paper border-b-2 border-ink p-3 sm:p-4 overflow-hidden flex items-center justify-center">
           <img
             src="{% if p.image.startswith('http') %}{{ p.image }}{% else %}{{ url_for('static', filename=p.image) }}{% endif %}"
             alt="Sepatu futsal {{ p.name }}"
-            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
             onerror="this.src='https://placehold.co/500x500/F1F1EF/121212?text={{ p.name | urlencode }}'"
           />
           
-          <!-- REVISI 3: Badge Brand & Jenis Sol (Kiri Atas, Bersusun) -->
-          <div class="absolute top-3 left-3 flex flex-col gap-1.5">
-            <span class="text-[10px] font-bold px-2.5 py-1 rounded-full text-white bg-ink uppercase w-max">
+          <div class="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-col gap-1">
+            <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-white bg-ink uppercase w-max shadow-[1px_1px_0px_#121212]">
               {{ p.brand }}
             </span>
             {% if p.outsole %}
-            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border border-ink text-ink bg-white uppercase w-max shadow-[2px_2px_0px_#121212]">
+            <span class="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-full border border-ink text-ink bg-white uppercase w-max shadow-[1px_1px_0px_#121212]">
               SOL: {{ p.outsole }}
             </span>
             {% endif %}
           </div>
 
-          <!-- Sisa Stok -->
           {% if p.stock < 5 %}
-          <span class="absolute top-3 right-3 text-[10px] font-bold px-2 py-1 rounded-full bg-turf text-white shadow-[2px_2px_0px_#121212]">
+          <span class="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-turf text-white shadow-[1px_1px_0px_#121212]">
             Sisa {{ p.stock }}
           </span>
           {% endif %}
         </div>
 
-        <div class="p-4 flex flex-col flex-1">
-          <p class="text-[11px] font-semibold text-ink/50 mb-1 uppercase">{{ p.category }}</p>
-          <h3 class="font-bold leading-snug mb-3">{{ p.name }}</h3>
+        <div class="p-3 sm:p-4 flex flex-col flex-1">
+          <p class="text-[9px] sm:text-[11px] font-bold text-ink/50 uppercase tracking-wider mb-0.5 sm:mb-1">{{ p.category }}</p>
+          <h3 class="font-bold text-xs sm:text-base leading-snug mb-2 sm:mb-3 line-clamp-2">{{ p.name }}</h3>
 
           <div class="mt-auto">
-            <div class="flex items-baseline gap-2 mb-3">
-              <span class="font-display text-lg">{{ p.price | rupiah }}</span>
+            <div class="flex items-baseline gap-2 mb-2 sm:mb-3">
+              <span class="font-display text-sm sm:text-lg text-court">{{ p.price | rupiah }}</span>
             </div>
             
-            <a href="{{ url_for('customer.product_detail', product_id=p.id) }}" class="block text-center w-full border-2 border-ink font-bold text-sm py-2.5 transition-colors hover:bg-ink hover:text-white shadow-[2px_2px_0px_#121212] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5">
-              Beli / Detail
+            <a href="{{ url_for('customer.product_detail', product_id=p.id) }}" class="block text-center w-full border-2 border-ink font-bold text-xs sm:text-sm py-2 sm:py-2.5 bg-white hover:bg-ink hover:text-white active:translate-x-0.5 active:translate-y-0.5 transition-colors shadow-[2px_2px_0px_#121212] hover:shadow-none">
+              Beli / Detail &rarr;
             </a>
           </div>
         </div>
@@ -215,95 +190,42 @@
     </div>
 
     {% if not products %}
-    <p id="emptyState" class="text-center text-ink/50 py-16 font-semibold">
+    <p id="emptyState" class="text-center text-ink/50 py-12 font-bold text-xs sm:text-sm">
       Koleksi belum tersedia. Harap tambahkan produk melalui panel Admin.
     </p>
     {% endif %}
 
-    <!-- REVISI 2: Tombol Lihat Semua Sepatu di Bagian Bawah Grid -->
-    <div class="mt-12 text-center">
-      <a href="{{ url_for('auth.login') }}" class="inline-block bg-volt text-ink font-bold px-8 py-4 border-2 border-ink uppercase text-sm shadow-[4px_4px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+    <div class="mt-8 sm:mt-12 text-center">
+      <a href="{{ url_for('auth.login') }}" class="inline-block bg-volt text-ink font-display text-xs sm:text-sm uppercase px-6 py-3.5 sm:px-8 sm:py-4 border-2 border-ink shadow-[4px_4px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 transition-all">
         Lihat Semua Koleksi Sepatu &rarr;
       </a>
     </div>
   </section>
 
-  <!-- ============ VALUE PROPOSITION ============ -->
-  <section class="bg-ink text-white">
-    <div class="max-w-7xl mx-auto px-5 md:px-8 py-14 md:py-16 grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/15">
-      <div class="flex items-start gap-4 py-6 sm:py-0 sm:pr-8">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
-        <div>
-          <h3 class="font-bold mb-1.5">100% Produk Lokal Berkualitas</h3>
-          <p class="text-white/60 text-sm">Diproduksi oleh pengrajin lokal dengan standar material setara brand internasional.</p>
-        </div>
-      </div>
-      <div class="flex items-start gap-4 py-6 sm:py-0 sm:px-8">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-        <div>
-          <h3 class="font-bold mb-1.5">Pengiriman Cepat</h3>
-          <p class="text-white/60 text-sm">Diproses dalam 1x24 jam dan dikirim ke seluruh Indonesia lewat mitra logistik terpercaya.</p>
-        </div>
-      </div>
-      <div class="flex items-start gap-4 py-6 sm:py-0 sm:pl-8">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-        <div>
-          <h3 class="font-bold mb-1.5">Garansi Original</h3>
-          <p class="text-white/60 text-sm">Setiap pasang dilengkapi kode keaslian dan jaminan uang kembali jika terbukti tidak original.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ============ FOOTER ============ -->
-  <footer class="bg-white border-t-2 border-ink">
-    <div class="max-w-7xl mx-auto px-5 md:px-8 py-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
-      <div>
-        <p class="font-display text-xl mb-3">GARUDA<span class="text-volt bg-ink px-1">SPORT</span></p>
-        <p class="text-ink/60 text-sm max-w-xs">Sepatu futsal lokal untuk pemain yang serius soal permainannya.</p>
-      </div>
-      <div>
-        <h4 class="font-bold mb-3 text-sm">Navigasi</h4>
-        <ul class="space-y-2 text-sm text-ink/60">
-          <li><a href="{{ url_for('index') }}" class="hover:text-ink">Home</a></li>
-          <li><a href="{{ url_for('catalog') }}" class="hover:text-ink">Katalog Futsal</a></li>
-          <li><a href="#" class="hover:text-ink">Koleksi Terbaru</a></li>
-          <li><a href="#" class="hover:text-ink">Tentang Kami</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="font-bold mb-3 text-sm">Bantuan</h4>
-        <ul class="space-y-2 text-sm text-ink/60">
-          <li><a href="#" class="hover:text-ink">Panduan Ukuran</a></li>
-          <li><a href="#" class="hover:text-ink">Pengembalian Barang</a></li>
-          <li><a href="#" class="hover:text-ink">Lacak Pesanan</a></li>
-          <li><a href="#" class="hover:text-ink">Pertanyaan Umum</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="font-bold mb-3 text-sm">Kontak</h4>
-        <ul class="space-y-2 text-sm text-ink/60">
-          <li>halo@garudasport.id</li>
-          <li>+62 812-0000-0000</li>
-          <li>Jakarta, Indonesia</li>
-        </ul>
-      </div>
-    </div>
-    <div class="border-t border-ink/10">
-      <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 flex flex-col sm:flex-row justify-between gap-2 text-xs text-ink/50">
-        <p>&copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.</p>
-        <p>Dibuat untuk pemain lapangan Indonesia.</p>
-      </div>
+  <footer class="bg-white border-t-2 border-ink mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 text-center sm:text-left flex flex-col sm:flex-row justify-between gap-2 text-xs text-ink/60 font-semibold">
+      <p>&copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.</p>
+      <p>Dibuat untuk pemain lapangan Indonesia.</p>
     </div>
   </footer>
 
   <script>
     const menuToggle = document.getElementById('menuToggle');
     const mobileMenu = document.getElementById('mobileMenu');
-    if (menuToggle && mobileMenu) {
-      menuToggle.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-      });
+    const menuIcon = document.getElementById('menuIcon');
+
+    function toggleMobileMenu() {
+      mobileMenu.classList.toggle('hidden');
+      if (!mobileMenu.classList.contains('hidden')) {
+        menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>';
+      } else {
+        menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>';
+      }
+    }
+
+    if (menuToggle) {
+      menuToggle.addEventListener('click', toggleMobileMenu);
     }
   </script>
 </body>
