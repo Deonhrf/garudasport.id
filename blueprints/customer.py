@@ -7,9 +7,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 customer_bp = Blueprint('customer', __name__, url_prefix='/customer')
 
-# Konfigurasi Midtrans Client Key & Server Key
-MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', 'SB-Mid-server-Mid-server-awM2edpzq162Ig2U9uynS5wf')
-MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-Mid-client-oRb_QKiAIxTmcFNR')
+# Konfigurasi Midtrans Client Key & Server Key (SUDAH DIPERBAIKI)
+MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', 'SB-Mid-server-awM2edpzq162Ig2U9uynS5wf')
+MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-oRb_QKiAIxTmcFNR')
 
 snap = midtransclient.Snap(
     is_production=False,
@@ -31,11 +31,9 @@ def dashboard():
 
     try:
         with connection.cursor() as cursor:
-            # 1. Ambil data user
             cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
             user_data = cursor.fetchone()
             
-            # 2. Hitung total pesanan
             try:
                 cursor.execute("SELECT COUNT(*) as total FROM orders WHERE user_id = %s", (user_id,))
                 result = cursor.fetchone()
@@ -43,7 +41,6 @@ def dashboard():
             except:
                 order_count = 0 
                 
-            # 3. Hitung jumlah item di keranjang (badge)
             try:
                 cursor.execute("SELECT SUM(quantity) as total_items FROM cart WHERE user_id = %s", (user_id,))
                 cart_result = cursor.fetchone()
@@ -51,7 +48,6 @@ def dashboard():
             except:
                 cart_count = 0
 
-            # [NOTIFIKASI] Ambil daftar notifikasi customer
             cursor.execute("""
                 SELECT * FROM notifications 
                 WHERE user_id = %s 
@@ -59,7 +55,6 @@ def dashboard():
             """, (user_id,))
             notifications = cursor.fetchall()
 
-            # [NOTIFIKASI] Hitung notifikasi unread customer
             cursor.execute("""
                 SELECT COUNT(*) as unread FROM notifications 
                 WHERE user_id = %s AND is_read = 0
@@ -289,7 +284,6 @@ def cancel_order(order_id):
                 UPDATE orders SET status_pesanan = 'Dibatalkan' WHERE id = %s
             """, (order_id,))
             
-            # [NOTIFIKASI] Beritahu pembeli bahwa pesanan dibatalkan
             cursor.execute("""
                 INSERT INTO notifications (user_id, title, message, type, is_read)
                 VALUES (%s, %s, %s, %s, 0)
@@ -311,11 +305,10 @@ def cancel_order(order_id):
 def product_detail(product_id):
     connection = get_db_connection()
     cart_count = 0
-    variants = {} # Siapkan dictionary kosong untuk menyimpan stok
+    variants = {}
     
     try:
         with connection.cursor() as cursor:
-            # 1. Ambil data produk utama
             cursor.execute("SELECT * FROM products WHERE id = %s", (product_id,))
             product = cursor.fetchone()
             
@@ -323,13 +316,11 @@ def product_detail(product_id):
                 flash('Produk tidak ditemukan.', 'danger')
                 return redirect(url_for('catalog'))
                 
-            # 2. [BARU] Ambil data stok per ukuran dari database
             cursor.execute("SELECT size, stock FROM product_variants WHERE product_id = %s", (product_id,))
             var_rows = cursor.fetchall()
             for row in var_rows:
-                variants[str(row['size'])] = row['stock'] # Masukkan ke dictionary
+                variants[str(row['size'])] = row['stock']
                 
-            # 3. Hitung badge keranjang
             if 'user_id' in session:
                 try:
                     cursor.execute("SELECT SUM(quantity) as total_items FROM cart WHERE user_id = %s", (session['user_id'],))
@@ -340,7 +331,6 @@ def product_detail(product_id):
     finally:
         connection.close()
         
-    # [PENTING] Jangan lupa kirim variabel 'variants' ke template HTML
     return render_template('customer/product_detail.html', product=product, variants=variants, cart_count=cart_count)
 
 @customer_bp.route('/cart/add/<int:product_id>', methods=['POST'])
@@ -392,7 +382,6 @@ def checkout():
     cursor = connection.cursor()
     
     try:
-        # Tangkap ID barang keranjang yang DICENTANG
         if request.method == 'GET':
             selected_items = request.args.getlist('selected_items')
             if not selected_items:
@@ -405,7 +394,6 @@ def checkout():
                 flash('Sesi checkout tidak valid. Silakan ulangi dari keranjang.', 'danger')
                 return redirect(url_for('customer.cart'))
 
-        # Ambil Profil & Alamat
         cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
         user_profile = cursor.fetchone()
 
@@ -431,9 +419,7 @@ def checkout():
         ongkir = 0 if subtotal_produk > 500000 else 25000
         total_harga = subtotal_produk + ongkir
         
-        # JIKA PENGGUNA KLIK TOMBOL "BAYAR SEKARANG" (POST)
         if request.method == 'POST':
-            # Dukung input baik dari Form Submit biasa maupun AJAX Request
             if request.is_json:
                 json_data = request.get_json()
                 alamat = json_data.get('alamat_pengiriman', '').strip()
@@ -479,14 +465,14 @@ def checkout():
                     VALUES (%s, %s, %s, %s, %s)
                 """, (order_id, item['product_id'], item['quantity'], item['price'], item['size']))
             
-            # Hapus barang yang dicentang dari keranjang
             query_delete = f"DELETE FROM cart WHERE user_id = %s AND id IN ({format_strings})"
             cursor.execute(query_delete, params)
             
             session.pop('checkout_items', None)
 
-            # INTEGRASI MIDTRANS: Minta Snap Token jika bukan COD
+            # INTEGRASI MIDTRANS
             snap_token = None
+            snap_error_msg = None
             if 'COD' not in metode.upper():
                 try:
                     enabled_payments = ["gopay", "shopeepay", "qris"] if 'qris' in metode.lower() else ["bca_va", "bni_va", "bri_va", "mandiri_va", "permata_va", "gopay", "shopeepay", "qris"]
@@ -507,15 +493,14 @@ def checkout():
                     if snap_token:
                         cursor.execute("UPDATE orders SET snap_token = %s WHERE id = %s", (snap_token, order_id))
                 except Exception as snap_err:
+                    snap_error_msg = str(snap_err)
                     print(f"ERROR MIDTRANS SNAP: {snap_err}")
 
-            # Notifikasi Customer
             cursor.execute("""
                 INSERT INTO notifications (user_id, title, message, type, is_read)
                 VALUES (%s, %s, %s, %s, 0)
             """, (user_id, "Pesanan Berhasil Dibuat", f"Pesanan #{order_id} berhasil dibuat. Silakan selesaikan pembayaran.", "order"))
 
-            # Notifikasi Admin
             cursor.execute("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
             admin_obj = cursor.fetchone()
             admin_id = admin_obj['id'] if admin_obj else 1
@@ -536,6 +521,11 @@ def checkout():
                         'redirect_url': url_for('customer.invoice', order_id=order_id)
                     })
                 else:
+                    if not snap_token:
+                        return jsonify({
+                            'success': False,
+                            'message': f'Gagal mendapatkan token Midtrans: {snap_error_msg or "Key tidak valid"}'
+                        }), 400
                     return jsonify({
                         'success': True,
                         'is_midtrans': True,
@@ -545,7 +535,6 @@ def checkout():
                         'redirect_url': url_for('customer.payment_instruction', order_id=order_id)
                     })
 
-            # Jika Form Submit Standar
             if 'COD' in metode.upper():
                 flash('Pesanan COD berhasil dibuat dan sedang diproses!', 'success')
                 return redirect(url_for('customer.invoice', order_id=order_id))
@@ -668,7 +657,6 @@ def payment_instruction(order_id):
                         WHERE id = %s
                     """, (filename, order_id))
 
-                    # [NOTIFIKASI] Beritahu admin bahwa bukti bayar diunggah & perlu verifikasi
                     cursor.execute("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
                     admin_obj = cursor.fetchone()
                     admin_id = admin_obj['id'] if admin_obj else 1
@@ -811,13 +799,11 @@ def request_refund(order_id):
                 WHERE id = %s
             """, (bank, no_rek, nama_pemilik, order_id))
 
-            # [NOTIFIKASI] 1. Kirim notifikasi ke customer bahwa pengajuan refund dicatat
             cursor.execute("""
                 INSERT INTO notifications (user_id, title, message, type, is_read)
                 VALUES (%s, %s, %s, %s, 0)
             """, (user_id, "Pengajuan Refund Diajukan", f"Permintaan refund untuk pesanan #{order_id} berhasil diajukan.", "refund"))
 
-            # [NOTIFIKASI] 2. Kirim notifikasi ke admin bahwa ada pengajuan refund baru
             cursor.execute("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
             admin_obj = cursor.fetchone()
             admin_id = admin_obj['id'] if admin_obj else 1

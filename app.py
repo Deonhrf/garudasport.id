@@ -23,9 +23,9 @@ app.register_blueprint(chat_bp)
 # --- FILTER RUPIAH UNTUK JINJA2 ---
 
 
-# Mengambil key dari environment variable Railway / Local
-MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', 'SB-Mid-server-Mid-server-awM2edpzq162Ig2U9uynS5wf')
-MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-Mid-client-oRb_QKiAIxTmcFNR')
+# Mengambil key dari environment variable Railway / Local (SUDAH DIPERBAIKI)
+MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', 'SB-Mid-server-awM2edpzq162Ig2U9uynS5wf')
+MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-oRb_QKiAIxTmcFNR')
 
 snap = midtransclient.Snap(
     is_production=False,  # Set False untuk mode Sandbox
@@ -36,7 +36,6 @@ snap = midtransclient.Snap(
 
 def format_rupiah(value) -> str:
     try:
-        # HAPUS * 1000 karena data di database sekarang sudah utuh (misal: 649000)
         val = float(value) 
         return f"Rp{val:,.0f}".replace(",", ".")
     except (ValueError, TypeError):
@@ -46,7 +45,7 @@ app.jinja_env.filters["rupiah"] = format_rupiah
 
 
 # =========================================================================
-# [BARU] WEBHOOK CALLBACK MIDTRANS (Verifikasi Pembayaran Otomatis Real-time)
+# WEBHOOK CALLBACK MIDTRANS (Verifikasi Pembayaran Otomatis Real-time)
 # =========================================================================
 @app.route('/api/payment-notification', methods=['POST'])
 def payment_notification():
@@ -81,13 +80,11 @@ def payment_notification():
                     """, (transaction_id, order_id))
 
                     if current_status != 'Diproses':
-                        # Notifikasi untuk Pembeli
                         cursor.execute("""
                             INSERT INTO notifications (user_id, title, message, type, is_read)
                             VALUES (%s, %s, %s, %s, 0)
                         """, (order['user_id'], "Pembayaran Berhasil", f"Pembayaran untuk pesanan #{order_id} telah berhasil diverifikasi otomatis oleh Midtrans.", "order"))
 
-                        # Notifikasi untuk Admin
                         cursor.execute("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
                         admin_obj = cursor.fetchone()
                         admin_id = admin_obj['id'] if admin_obj else 1
@@ -96,10 +93,8 @@ def payment_notification():
                             VALUES (%s, %s, %s, %s, 0)
                         """, (admin_id, "Pesanan Lunas (Midtrans)", f"Pesanan #{order_id} telah dilunasi via Midtrans.", "order"))
 
-            # Pembayaran Gagal / Dibatalkan / Kadaluarsa
             elif transaction_status in ['cancel', 'deny', 'expire']:
                 if current_status != 'Dibatalkan':
-                    # Kembalikan stok produk
                     cursor.execute("SELECT product_id, quantity FROM order_items WHERE order_id = %s", (order_id,))
                     items = cursor.fetchall()
                     for item in items:
@@ -117,7 +112,6 @@ def payment_notification():
                         VALUES (%s, %s, %s, %s, 0)
                     """, (order['user_id'], "Pembayaran Dibatalkan / Kadaluarsa", f"Pesanan #{order_id} dibatalkan karena pembayaran tidak diselesaikan.", "order"))
 
-            # Pembayaran Menunggu
             elif transaction_status == 'pending':
                 cursor.execute("""
                     UPDATE orders 
@@ -179,38 +173,30 @@ def index():
 # --- HALAMAN KATALOG PRODUK / ETALASE ---
 @app.route('/catalog')
 def catalog():
-    # Menangkap parameter dari HTML (sekarang kita pakai 'brand', bukan 'category')
     selected_brand = request.args.get("brand", "") 
     search_query = request.args.get("q", "")
     
     connection = get_db_connection()
-    cart_count = 0  # Default keranjang 0 jika user belum login
+    cart_count = 0
     
     try:
-        # Gunakan DictCursor agar hasil query berbentuk dictionary
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            # 1. Query dasar mengambil produk dari database MySQL
             sql = "SELECT * FROM products WHERE 1=1"
             params = []
             
-            # 2. Jika user mengetik pencarian (search)
             if search_query:
                 sql += " AND (name LIKE %s OR brand LIKE %s OR description LIKE %s)"
                 params.extend([f"%{search_query}%", f"%{search_query}%", f"%{search_query}%"])
                 
-            # 3. Jika user menekan tombol filter Brand (Specs / Ortus / Mills)
             if selected_brand:
                 sql += " AND brand = %s"
                 params.append(selected_brand)
                 
-            # Urutkan dari produk terbaru
             sql += " ORDER BY id DESC"
             
-            # Eksekusi query produk
             cursor.execute(sql, params)
             filtered_products = cursor.fetchall()
                 
-            # --- Logika mengambil jumlah keranjang ---
             if 'user_id' in session:
                 try:
                     cursor.execute("SELECT SUM(quantity) as total_items FROM cart WHERE user_id = %s", (session['user_id'],))
@@ -218,17 +204,14 @@ def catalog():
                     cart_count = int(cart_result['total_items']) if cart_result and cart_result['total_items'] else 0
                 except:
                     cart_count = 0
-            # --------------------------------------------------------
 
     finally:
         connection.close()
 
-    # Variabel CATEGORIES dihapus karena tombol filter brand sekarang sudah diatur langsung di HTML
-
     return render_template(
         "catalog.html",
         products=filtered_products,
-        selected_brand=selected_brand, # Kirim parameter brand kembali ke HTML
+        selected_brand=selected_brand,
         search_query=search_query,
         cart_count=cart_count
     )
