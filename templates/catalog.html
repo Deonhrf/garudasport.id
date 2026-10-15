@@ -32,37 +32,35 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Alpine.js untuk Dropdown Notifikasi & Interaksi -->
+  <!-- Alpine.js -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen">
+<body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen selection:bg-volt selection:text-ink">
 
   <!-- ============ NAVBAR UTAMA ============ -->
-  <header class="bg-white/95 backdrop-blur border-b-2 border-ink sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-5 md:px-8 h-18 py-4 flex items-center justify-between">
+  <header class="bg-white border-b-2 border-ink sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 h-16 sm:h-18 py-3 flex items-center justify-between">
       
       <!-- Kiri: Tombol Garis Tiga (Jika Login) & Logo -->
-      <div class="flex items-center gap-4 ml-2 md:ml-0">
+      <div class="flex items-center gap-3 sm:gap-4">
         {% if session.get('user_id') %}
-        <button onclick="toggleSidebar()" class="p-2 border-2 border-ink bg-paper hover:bg-volt transition-colors flex items-center justify-center shadow-[2px_2px_0px_#121212]" title="Menu Navigasi">
+        <button onclick="toggleSidebar()" aria-label="Buka Menu Navigasi" class="p-2 sm:p-2.5 border-2 border-ink bg-paper hover:bg-volt active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center shadow-[2px_2px_0px_#121212]" title="Menu Navigasi">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
         </button>
         {% endif %}
 
-        <a href="{{ url_for('customer.dashboard') }}" class="font-display text-2xl md:text-3xl tracking-tight flex items-center gap-2">
+        <a href="{{ url_for('customer.dashboard') if session.get('user_id') else url_for('catalog') }}" class="font-display text-xl sm:text-2xl md:text-3xl tracking-tight flex items-center gap-1 sm:gap-2">
           GARUDA<span class="text-volt bg-ink px-1">SPORT</span> 
         </a>
       </div>
       
-      <!-- Kanan: Lonceng Notif (Jika Login), Profil, & Keranjang -->
-      <div class="flex items-center gap-4 md:gap-5">
+      <!-- Kanan: Notifikasi, Profil / Masuk, & Keranjang -->
+      <div class="flex items-center gap-2.5 sm:gap-4">
         
         {% if session.get('user_id') %}
-          <!-- ========================================== -->
-          <!-- KOTAK LONCENG NOTIFIKASI CUSTOMER  -->
-          <!-- ========================================== -->
+          <!-- KOTAK LONCENG NOTIFIKASI -->
           <div class="relative" x-data="{ 
             open: false,
             unreadCount: {{ unread_notif if unread_notif else 0 }},
@@ -78,27 +76,25 @@
               }
             }
           }">
-            <!-- Tombol Lonceng -->
-            <button @click="open = !open; if(open) markAsRead()" class="relative p-2.5 border-2 border-ink bg-white hover:bg-volt transition-colors flex items-center justify-center shadow-[2px_2px_0px_#121212]" title="Notifikasi Sistem">
+            <button @click="open = !open; if(open) markAsRead()" aria-label="Notifikasi" class="relative p-2 sm:p-2.5 border-2 border-ink bg-white hover:bg-volt active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center shadow-[2px_2px_0px_#121212]">
               <svg class="w-5 h-5 text-ink" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
               </svg>
-              <!-- Badge Angka Merah -->
-              <span x-show="unreadCount > 0" x-text="unreadCount" class="absolute -top-2 -right-2 bg-turf text-white text-[10px] font-bold px-1.5 py-0.5 border border-ink rounded-full animate-bounce"></span>
+              <span x-show="unreadCount > 0" x-text="unreadCount" class="absolute -top-1.5 -right-1.5 bg-turf text-white text-[10px] font-bold px-1.5 py-0.2 border border-ink rounded-full animate-bounce"></span>
             </button>
 
-            <!-- Dropdown Kotak Daftar Notifikasi -->
-            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-72 md:w-80 bg-white border-2 border-ink shadow-[6px_6px_0px_#121212] z-50 p-4 space-y-3" style="display: none;">
+            <!-- Dropdown Notifikasi Safe-Width -->
+            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-2.5rem)] bg-white border-2 border-ink shadow-[6px_6px_0px_#121212] z-50 p-4 space-y-3" style="display: none;">
               <div class="flex items-center justify-between border-b-2 border-ink pb-2">
                 <span class="font-display text-xs uppercase">Notifikasi Saya</span>
                 <span class="text-[10px] font-bold bg-volt px-2 py-0.5 border border-ink" x-text="unreadCount + ' Baru'"></span>
               </div>
-              <div class="space-y-2 max-h-64 overflow-y-auto">
+              <div class="space-y-2 max-h-60 overflow-y-auto">
                 {% if notifications %}
                   {% for notif in notifications %}
                   <div class="p-3 border-2 border-ink text-xs bg-white text-ink shadow-[2px_2px_0px_#121212]">
                     <p class="font-bold text-ink">{{ notif.title }}</p>
-                    <p class="mt-1 text-ink/80">{{ notif.message }}</p>
+                    <p class="mt-1 text-ink/80 break-words">{{ notif.message }}</p>
                     <span class="text-[9px] text-ink/50 mt-1 block">{{ notif.created_at.strftime('%d/%m/%Y %H:%M') if notif.created_at else '' }}</span>
                   </div>
                   {% endfor %}
@@ -111,30 +107,26 @@
 
           <!-- Info Akun -->
           <div>
-            <span class="hidden sm:inline-block text-sm font-bold bg-volt px-3 py-1.5 border-2 border-ink shadow-[2px_2px_0px_#121212]">
+            <span class="hidden sm:inline-block text-xs md:text-sm font-bold bg-volt px-3 py-1.5 border-2 border-ink shadow-[2px_2px_0px_#121212]">
               Halo, {{ session.nama }}
             </span>
           </div>
 
         {% else %}
-          <!-- Jika belum login, tampilkan tombol Masuk -->
-          <a href="{{ url_for('auth.login') }}" class="hidden sm:flex items-center gap-2 text-sm font-bold bg-volt px-5 py-2 border-2 border-ink shadow-[2px_2px_0px_#121212] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all">
+          <a href="{{ url_for('auth.login') }}" class="text-xs sm:text-sm font-bold bg-volt px-4 py-1.5 sm:px-5 sm:py-2 border-2 border-ink shadow-[2px_2px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 transition-all">
             Masuk
           </a>
         {% endif %}
 
-        <!-- ========================================== -->
         <!-- KERANJANG BELANJA -->
-        <!-- ========================================== -->
-        <a href="{{ url_for('customer.cart') }}" aria-label="Keranjang belanja" class="relative flex items-center justify-center hover:text-court transition-colors group">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <a href="{{ url_for('customer.cart') }}" aria-label="Keranjang belanja" class="relative p-2 sm:p-2.5 border-2 border-ink bg-white hover:bg-volt active:translate-x-0.5 active:translate-y-0.5 transition-all shadow-[2px_2px_0px_#121212] group">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1"></circle>
             <circle cx="20" cy="21" r="1"></circle>
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
-          <!-- Badge Angka Keranjang -->
           {% if cart_count and cart_count > 0 %}
-          <span class="absolute -top-2 -right-2.5 bg-volt text-ink text-[10px] font-display px-1.5 py-0.5 border border-ink shadow-[1px_1px_0px_#121212] group-hover:bg-court group-hover:text-white transition-colors rounded-full">
+          <span class="absolute -top-1.5 -right-1.5 bg-volt text-ink text-[10px] font-display px-1.5 py-0.2 border border-ink shadow-[1px_1px_0px_#121212] group-hover:bg-court group-hover:text-white transition-colors rounded-full">
             {{ cart_count }}
           </span>
           {% endif %}
@@ -144,59 +136,54 @@
     </div>
   </header>
 
-  <!-- ============ SIDEBAR GESER (Hanya Muncul Jika Login) ============ -->
+  <!-- ============ SIDEBAR GESER (z-[60] Agar Menutup Header) ============ -->
   {% if session.get('user_id') %}
-  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-ink/50 z-50 hidden transition-opacity"></div>
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-ink/50 z-[55] hidden transition-opacity"></div>
 
-  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r-2 border-ink flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-in-out shadow-[6px_0px_0px_#121212]">
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 max-w-[85vw] bg-white border-r-2 border-ink flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-in-out shadow-[6px_0px_0px_#121212]">
     <div>
-      <!-- Header Sidebar -->
-      <div class="h-18 px-6 border-b-2 border-ink flex items-center justify-between bg-paper">
-        <span class="font-display text-base uppercase tracking-wider">Menu Akun</span>
-        <button onclick="toggleSidebar()" class="text-ink font-bold text-xl px-2 py-1 border-2 border-ink bg-white hover:bg-volt transition-colors">
+      <div class="h-16 sm:h-18 px-5 border-b-2 border-ink flex items-center justify-between bg-paper">
+        <span class="font-display text-sm sm:text-base uppercase tracking-wider">Menu Akun</span>
+        <button onclick="toggleSidebar()" aria-label="Tutup Menu" class="text-ink font-bold text-xl px-2.5 py-0.5 border-2 border-ink bg-white hover:bg-volt transition-colors">
           &times;
         </button>
       </div>
 
-      <!-- Daftar Menu Sidebar -->
-      <nav class="p-5 space-y-3 font-bold uppercase text-xs">
+      <nav class="p-4 sm:p-5 space-y-2.5 font-bold uppercase text-xs">
         <a href="{{ url_for('customer.dashboard') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5">
            <span>📊</span> Dashboard Saya
         </a>
 
-        <!-- Menu Belanja Aktif (Katalog) -->
         <a href="{{ url_for('catalog') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all bg-volt text-ink translate-x-1 translate-y-1 shadow-none">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none">
            <span>👟</span> Belanja Sepatu
         </a>
         
         <a href="{{ url_for('customer.order_history') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5">
            <span>📦</span> Pesanan Saya
         </a>
 
         <a href="{{ url_for('chat.customer_chat') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5">
            <span>💬</span> Chat Admin
         </a>
         
         <a href="{{ url_for('customer.profile') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5">
            <span>👤</span> Profil & Pengaturan
         </a>
       </nav>
     </div>
 
-    <!-- Info Bawah Sidebar & Logout -->
-    <div class="p-5 border-t-2 border-ink space-y-3">
+    <div class="p-4 sm:p-5 border-t-2 border-ink space-y-3">
       <div class="bg-paper border-2 border-ink p-3 text-xs">
         <p class="font-bold uppercase text-ink/50 text-[10px]">Toko Futsal</p>
         <p class="font-bold text-turf mt-0.5">● GarudaSport ID</p>
       </div>
       
-      <!-- Tombol Keluar (Logout) Paling Bawah -->
-      <a href="{{ url_for('auth.logout') }}" class="flex items-center justify-center gap-2 w-full bg-turf text-white px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none hover:bg-ink transition-all text-xs font-bold uppercase">
+      <a href="{{ url_for('auth.logout') }}" class="flex items-center justify-center gap-2 w-full bg-turf text-white px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:bg-ink transition-all text-xs font-bold uppercase">
         Keluar
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
       </a>
@@ -205,13 +192,13 @@
   {% endif %}
 
   <!-- ============ KONTEN UTAMA KATALOG ============ -->
-  <main class="flex-grow max-w-7xl mx-auto w-full px-5 md:px-8 py-10 md:py-14">
+  <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-8 py-6 sm:py-12">
     
     <!-- Judul & Search Bar -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b-2 border-ink pb-6">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 border-b-2 border-ink pb-4 sm:pb-6">
       <div>
-        <h1 class="font-display text-4xl md:text-5xl uppercase mb-2">Line-up Sepatu Futsal</h1>
-        <p class="text-ink/70 font-medium text-sm md:text-base">Pilih senjata terbaikmu berdasarkan desain favorit atau tipe outsole lapangan.</p>
+        <h1 class="font-display text-2xl sm:text-4xl md:text-5xl uppercase mb-1 sm:mb-2">Line-up Sepatu Futsal</h1>
+        <p class="text-ink/70 font-medium text-xs sm:text-sm md:text-base">Pilih senjata terbaikmu berdasarkan desain favorit atau tipe outsole lapangan.</p>
       </div>
 
       <!-- Form Pencarian -->
@@ -221,26 +208,23 @@
           name="q" 
           value="{{ search_query }}" 
           placeholder="Cari merk / nama sepatu..." 
-          class="bg-white border-2 border-ink px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-volt w-full md:w-64 shadow-[2px_2px_0px_#121212]"
+          class="bg-white border-2 border-ink px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-volt w-full md:w-64 shadow-[2px_2px_0px_#121212]"
         >
-        <button type="submit" class="bg-ink text-white font-bold px-6 py-2.5 border-2 border-ink hover:bg-volt hover:text-ink transition-colors shadow-[2px_2px_0px_#121212]">
+        <button type="submit" class="bg-ink text-white font-bold px-4 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm border-2 border-ink hover:bg-volt hover:text-ink active:translate-x-0.5 active:translate-y-0.5 transition-colors shadow-[2px_2px_0px_#121212] shrink-0">
           Cari
         </button>
       </form>
     </div>
 
     <!-- Filter Brand (Pills) -->
-    <div class="flex flex-wrap gap-2.5 mb-10">
-      
-      <!-- Tombol Semua Sepatu (Reset Filter) -->
+    <div class="flex flex-wrap gap-2 sm:gap-2.5 mb-6 sm:mb-10">
       <a
         href="{{ url_for('catalog', q=search_query) }}"
-        class="px-4 py-2 text-sm font-bold border-2 border-ink rounded-full transition-all {% if not selected_brand %}bg-ink text-white shadow-[2px_2px_0px_#121212]{% else %}bg-white text-ink hover:bg-volt hover:shadow-[2px_2px_0px_#121212]{% endif %}"
+        class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold border-2 border-ink rounded-full transition-all active:translate-x-0.5 active:translate-y-0.5 {% if not selected_brand %}bg-ink text-white shadow-[2px_2px_0px_#121212]{% else %}bg-white text-ink hover:bg-volt hover:shadow-[2px_2px_0px_#121212]{% endif %}"
       >
         Semua Brand
       </a>
 
-      <!-- Daftar 3 Brand Sesuai Database -->
       {% set brands = [
           {'key': 'Specs', 'label': 'Specs'},
           {'key': 'Ortus', 'label': 'Ortuseight'},
@@ -250,62 +234,61 @@
       {% for brand in brands %}
       <a
         href="{{ url_for('catalog', brand=brand.key, q=search_query) }}"
-        class="px-4 py-2 text-sm font-bold border-2 border-ink rounded-full transition-all {% if brand.key == selected_brand %}bg-ink text-white shadow-[2px_2px_0px_#121212]{% else %}bg-white text-ink hover:bg-volt hover:shadow-[2px_2px_0px_#121212]{% endif %}"
+        class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold border-2 border-ink rounded-full transition-all active:translate-x-0.5 active:translate-y-0.5 {% if brand.key == selected_brand %}bg-ink text-white shadow-[2px_2px_0px_#121212]{% else %}bg-white text-ink hover:bg-volt hover:shadow-[2px_2px_0px_#121212]{% endif %}"
       >
         {{ brand.label }}
       </a>
       {% endfor %}
-      
     </div>
 
     <!-- Grid Produk dari Database -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
       {% for p in products %}
-      <article class="border-2 border-ink bg-white flex flex-col group shadow-[6px_6px_0px_#121212] hover:translate-x-1 hover:-translate-y-1 transition-all">
-        <!-- Gambar & Badge -->
-   <!-- Gambar & Badge -->
-        <div class="relative overflow-hidden bg-paper aspect-square border-b-2 border-ink">
+      <article class="border-2 border-ink bg-white flex flex-col group shadow-[4px_4px_0px_#121212] sm:shadow-[6px_6px_0px_#121212] hover:translate-x-0.5 hover:-translate-y-0.5 transition-all">
+        
+        <!-- WADAH GAMBAR PRODUK (OBJECT-CONTAIN AGAR TIDAK TERPOTONG) -->
+        <div class="relative w-full aspect-square bg-paper border-b-2 border-ink p-3 sm:p-4 overflow-hidden flex items-center justify-center">
           <img 
             src="{{ url_for('static', filename=p.image) }}" 
             alt="{{ p.name }}" 
-            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" 
             loading="lazy"
           >
           
-          <!-- Badge Brand & Jenis Sol (Kiri Atas, Bersusun) Sesuai Beranda -->
-          <div class="absolute top-3 left-3 flex flex-col gap-1.5">
-            <span class="text-[10px] font-bold px-2.5 py-1 rounded-full text-white bg-ink uppercase w-max">
+          <!-- Badge Brand & Sol -->
+          <div class="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-col gap-1">
+            <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-white bg-ink uppercase w-max shadow-[1px_1px_0px_#121212]">
               {{ p.brand }}
             </span>
             {% if p.outsole %}
-            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border border-ink text-ink bg-white uppercase w-max shadow-[2px_2px_0px_#121212]">
+            <span class="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-full border border-ink text-ink bg-white uppercase w-max shadow-[1px_1px_0px_#121212]">
               SOL: {{ p.outsole }}
             </span>
             {% endif %}
           </div>
           
           {% if p.old_price %}
-          <span class="absolute top-3 right-3 text-[11px] font-bold px-2 py-1 rounded-full bg-volt text-ink border border-ink">
+          <span class="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 text-[9px] sm:text-[11px] font-bold px-2 py-0.5 sm:py-1 rounded-full bg-volt text-ink border border-ink">
             Diskon
           </span>
           {% endif %}
         </div>
 
         <!-- Detail Produk -->
-        <div class="p-4 flex flex-col flex-1">
-          <p class="text-[11px] font-bold text-ink/50 uppercase tracking-wider mb-1">{{ p.brand }}</p>
-          <h3 class="font-bold text-sm sm:text-base leading-snug mb-3 line-clamp-2">{{ p.name }}</h3>
+        <div class="p-3 sm:p-4 flex flex-col flex-1">
+          <p class="text-[9px] sm:text-[11px] font-bold text-ink/50 uppercase tracking-wider mb-0.5 sm:mb-1">{{ p.brand }}</p>
+          <h3 class="font-bold text-xs sm:text-base leading-snug mb-2 sm:mb-3 line-clamp-2">{{ p.name }}</h3>
 
           <div class="mt-auto">
-            <div class="flex items-baseline gap-2 mb-3">
-              <span class="font-display text-lg">{{ p.price | rupiah }}</span>
+            <div class="flex items-baseline gap-1.5 sm:gap-2 mb-2 sm:mb-3 flex-wrap">
+              <span class="font-display text-sm sm:text-lg text-court">{{ p.price | rupiah }}</span>
               {% if p.old_price %}
-              <span class="text-xs text-ink/40 line-through">{{ p.old_price | rupiah }}</span>
+              <span class="text-[10px] sm:text-xs text-ink/40 line-through">{{ p.old_price | rupiah }}</span>
               {% endif %}
             </div>
 
-            <!-- Tombol mengarah ke halaman detail produk -->
-            <a href="{{ url_for('customer.product_detail', product_id=p.id) }}" class="block text-center w-full border-2 border-ink font-bold text-sm py-2.5 bg-white hover:bg-ink hover:text-white transition-colors shadow-[2px_2px_0px_#121212] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5">
+            <!-- Tombol Detail -->
+            <a href="{{ url_for('customer.product_detail', product_id=p.id) }}" class="block text-center w-full border-2 border-ink font-bold text-xs sm:text-sm py-2 sm:py-2.5 bg-white hover:bg-ink hover:text-white active:translate-x-0.5 active:translate-y-0.5 transition-colors shadow-[2px_2px_0px_#121212] hover:shadow-none">
               Lihat Detail &rarr;
             </a>
           </div>
@@ -315,13 +298,13 @@
       {% endfor %}
     </div>
 
-    <!-- State Kosong Jika Produk Tidak Ditemukan -->
+    <!-- State Kosong -->
     {% if not products %}
-    <div class="text-center py-20 bg-white border-2 border-ink shadow-[6px_6px_0px_#121212] max-w-lg mx-auto">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto text-ink/30 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <p class="font-bold text-lg mb-1">Produk Tidak Ditemukan</p>
-      <p class="text-ink/60 text-sm mb-6">Coba gunakan kata kunci lain atau pilih kategori yang berbeda.</p>
-      <a href="{{ url_for('catalog') }}" class="inline-block bg-volt text-ink font-bold px-6 py-2.5 border-2 border-ink shadow-[2px_2px_0px_#121212]">
+    <div class="text-center py-12 sm:py-20 bg-white border-2 border-ink shadow-[6px_6px_0px_#121212] max-w-lg mx-auto p-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-ink/30 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <p class="font-bold text-base sm:text-lg mb-1">Produk Tidak Ditemukan</p>
+      <p class="text-ink/60 text-xs sm:text-sm mb-5">Coba gunakan kata kunci lain atau pilih kategori yang berbeda.</p>
+      <a href="{{ url_for('catalog') }}" class="inline-block bg-volt text-ink font-bold px-5 py-2.5 text-xs sm:text-sm border-2 border-ink shadow-[2px_2px_0px_#121212]">
         Reset Filter
       </a>
     </div>
@@ -331,19 +314,18 @@
 
   <!-- ============ FOOTER ============ -->
   <footer class="bg-white border-t-2 border-ink mt-auto">
-    <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 flex flex-col sm:flex-row justify-between gap-2 text-xs text-ink/50 font-semibold">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 text-center sm:text-left flex flex-col sm:flex-row justify-between gap-2 text-xs text-ink/60 font-semibold">
       <p>&copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.</p>
       <p>Dibuat untuk pemain lapangan Indonesia.</p>
     </div>
   </footer>
 
-  <!-- SCRIPT JAVASCRIPT UNTUK SIDEBAR -->
+  <!-- SCRIPT JAVASCRIPT -->
   {% if session.get('user_id') %}
   <script>
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('sidebar-overlay');
-      
       sidebar.classList.toggle('-translate-x-full');
       overlay.classList.toggle('hidden');
     }
