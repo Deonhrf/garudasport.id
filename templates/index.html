@@ -55,7 +55,7 @@
         <nav class="hidden lg:flex items-center gap-8 font-bold text-xs uppercase tracking-wider">
           <a href="{{ url_for('index') }}" class="py-1 border-b-2 border-ink">Home</a>
           <a href="#produk" class="py-1 border-b-2 border-transparent hover:border-ink transition-colors">Katalog Futsal</a>
-          <a href="{{ url_for('about') if 'about' in config else '#' }}" class="py-1 border-b-2 border-transparent hover:border-ink transition-colors">Tentang Kami</a>
+          <a href="{{ url_for('about') }}" class="py-1 border-b-2 border-transparent hover:border-ink transition-colors">Tentang Kami</a>
         </nav>
 
         <!-- Aksi Kanan -->
@@ -83,7 +83,7 @@
       <nav id="mobileMenu" class="hidden lg:hidden pb-4 flex flex-col gap-2 font-bold uppercase text-xs border-t-2 border-ink pt-3 bg-paper px-2">
         <a href="{{ url_for('index') }}" class="px-3 py-2.5 bg-volt border-2 border-ink shadow-[2px_2px_0px_#121212]">Home</a>
         <a href="#produk" onclick="toggleMobileMenu()" class="px-3 py-2.5 bg-white border-2 border-ink shadow-[2px_2px_0px_#121212]">Katalog Futsal</a>
-        <a href="{{ url_for('about') if 'about' in config else '#' }}" class="px-3 py-2.5 bg-white border-2 border-ink shadow-[2px_2px_0px_#121212]">Tentang Kami</a>
+        <a href="{{ url_for('about') }}" class="px-3 py-2.5 bg-white border-2 border-ink shadow-[2px_2px_0px_#121212]">Tentang Kami</a>
         <a href="{{ url_for('auth.login') }}" class="px-3 py-2.5 bg-turf text-white border-2 border-ink shadow-[2px_2px_0px_#121212]">Masuk Ke Akun</a>
       </nav>
     </div>
@@ -149,12 +149,11 @@
       </div>
     </div>
 
-    <!-- Grid Produk (Safe Object Contain untuk HP) -->
+    <!-- Grid Produk -->
     <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
       {% for p in products %}
       <article class="product-card group border-2 border-ink bg-white flex flex-col transition-all shadow-[3px_3px_0px_#121212] sm:shadow-[6px_6px_0px_#121212] hover:translate-x-0.5 hover:-translate-y-0.5">
         
-        <!-- Wadah Gambar Safe Aspect -->
         <div class="relative overflow-hidden bg-paper aspect-square border-b-2 border-ink p-2 sm:p-4 flex items-center justify-center">
           <img
             src="{% if p.image.startswith('http') %}{{ p.image }}{% else %}{{ url_for('static', filename=p.image) }}{% endif %}"
@@ -164,7 +163,6 @@
             onerror="this.src='https://placehold.co/500x500/F1F1EF/121212?text={{ p.name | urlencode }}'"
           />
           
-          <!-- Badge Brand & Sol -->
           <div class="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1">
             <span class="text-[8px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full text-white bg-ink uppercase w-max shadow-[1px_1px_0px_#121212]">
               {{ p.brand }}
@@ -253,7 +251,7 @@
         <ul class="space-y-1.5 text-xs sm:text-sm text-ink/70 font-medium">
           <li><a href="{{ url_for('index') }}" class="hover:text-ink">Home</a></li>
           <li><a href="#produk" class="hover:text-ink">Katalog Futsal</a></li>
-          <li><a href="{{ url_for('about') if 'about' in config else '#' }}" class="hover:text-ink">Tentang Kami</a></li>
+          <li><a href="{{ url_for('about') }}" class="hover:text-ink">Tentang Kami</a></li>
         </ul>
       </div>
       <div>
