@@ -28,36 +28,34 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen">
+<body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen selection:bg-volt selection:text-ink overflow-x-hidden">
 
   <!-- ============ NAVBAR ADMIN UTAMA ============ -->
-  <header class="bg-white border-b-2 border-ink sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-5 md:px-8 h-18 py-4 flex items-center justify-between">
+  <header class="bg-white border-b-2 border-ink sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 h-16 sm:h-18 py-3 flex items-center justify-between">
       
       <!-- Kiri: Tombol Garis Tiga & Logo Admin -->
-      <div class="flex items-center gap-4 ml-2 md:ml-0">
-        <button onclick="toggleSidebar()" class="p-2 border-2 border-ink bg-paper hover:bg-volt transition-colors flex items-center justify-center shadow-[2px_2px_0px_#121212]" title="Menu Navigasi">
+      <div class="flex items-center gap-3 sm:gap-4">
+        <button onclick="toggleSidebar()" aria-label="Buka Menu Navigasi" class="p-2 sm:p-2.5 border-2 border-ink bg-paper hover:bg-volt active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center shadow-[2px_2px_0px_#121212]" title="Menu Navigasi">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
         </button>
 
-        <a href="{{ url_for('admin.dashboard') }}" class="font-display text-2xl md:text-3xl tracking-tight flex items-center gap-2">
+        <a href="{{ url_for('admin.dashboard') }}" class="font-display text-xl sm:text-2xl md:text-3xl tracking-tight flex items-center gap-1.5 sm:gap-2">
           GARUDA<span class="text-volt bg-ink px-1">SPORT</span> 
-          <span class="text-xs bg-turf text-white px-2 py-0.5 border border-ink uppercase">Admin</span>
+          <span class="text-[10px] sm:text-xs bg-turf text-white px-2 py-0.5 border border-ink uppercase hidden sm:inline">Admin</span>
         </a>
       </div>
       
       <!-- Navigasi Kanan (Tombol Kembali & Halo Admin) -->
-      <div class="flex items-center gap-4 md:gap-6">
-        <!-- Tombol Kembali ke Halaman Sebelumnya -->
-        <button onclick="history.back()" class="hidden sm:inline text-sm font-bold border-b-2 border-transparent hover:border-ink transition-colors pb-0.5 cursor-pointer">
-          &larr; Kembali
+      <div class="flex items-center gap-2.5 sm:gap-4">
+        <button onclick="history.back()" class="inline-flex items-center gap-1 text-xs sm:text-sm font-bold border-2 border-ink bg-paper px-2.5 py-1.5 hover:bg-volt transition-all shadow-[2px_2px_0px_#121212] cursor-pointer">
+          &larr; <span class="hidden sm:inline">Kembali</span>
         </button>
 
-        <!-- Info Admin -->
         <div>
-          <span class="text-sm font-bold bg-volt px-3 py-1.5 border-2 border-ink shadow-[2px_2px_0px_#121212]">
+          <span class="inline-block text-xs sm:text-sm font-bold bg-volt px-3 py-1.5 border-2 border-ink shadow-[2px_2px_0px_#121212]">
             Halo, {{ session.nama }}
           </span>
         </div>
@@ -67,73 +65,78 @@
   </header>
 
   <!-- ============ SIDEBAR GESER ============ -->
-  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-ink/50 z-50 hidden transition-opacity"></div>
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-ink/50 z-[55] hidden transition-opacity"></div>
 
-  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r-2 border-ink flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-in-out shadow-[6px_0px_0px_#121212]">
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 max-w-[85vw] bg-white border-r-2 border-ink flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-in-out shadow-[6px_0px_0px_#121212]">
     <div>
-      <div class="h-18 px-6 border-b-2 border-ink flex items-center justify-between bg-paper">
-        <span class="font-display text-base uppercase tracking-wider">Menu Navigasi</span>
-        <button onclick="toggleSidebar()" class="text-ink font-bold text-xl px-2 py-1 border-2 border-ink bg-white hover:bg-volt transition-colors">
+      <div class="h-16 sm:h-18 px-5 border-b-2 border-ink flex items-center justify-between bg-paper">
+        <span class="font-display text-sm sm:text-base uppercase tracking-wider">Menu Navigasi</span>
+        <button onclick="toggleSidebar()" aria-label="Tutup Menu" class="text-ink font-bold text-xl px-2.5 py-0.5 border-2 border-ink bg-white hover:bg-volt transition-colors">
           &times;
         </button>
       </div>
 
-      <nav class="p-5 space-y-3 font-bold uppercase text-xs">
+      <nav class="p-4 sm:p-5 space-y-2.5 font-bold uppercase text-xs">
         <a href="{{ url_for('admin.dashboard') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint == 'admin.dashboard' %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint == 'admin.dashboard' %}bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none{% else %}bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5{% endif %}">
            <span>📊</span> Dashboard Utama
         </a>
 
-        <!-- Menu Laporan Penjualan -->
         <a href="{{ url_for('admin.sales_reports') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint == 'admin.sales_reports' %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint == 'admin.sales_reports' %}bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none{% else %}bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5{% endif %}">
            <span>📈</span> Laporan Penjualan
         </a>
 
         <a href="{{ url_for('chat.admin_chats') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['chat.admin_chats', 'chat.admin_chat_detail'] %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['chat.admin_chats', 'chat.admin_chat_detail'] %}bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none{% else %}bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5{% endif %}">
            <span>💬</span> Chat Pelanggan
         </a>
         
         <a href="{{ url_for('admin.manage_orders') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['admin.manage_orders', 'admin.verify_order'] %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
-           <span>📦</span> Kelola Pesanan & Transaksi
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['admin.manage_orders', 'admin.verify_order'] %}bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none{% else %}bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5{% endif %}">
+           <span>📦</span> Kelola Pesanan
         </a>
         
         <a href="{{ url_for('admin.manage_products') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['admin.manage_products', 'admin.add_product', 'admin.edit_product'] %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['admin.manage_products', 'admin.add_product', 'admin.edit_product'] %}bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none{% else %}bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5{% endif %}">
            <span>👟</span> Katalog Produk
         </a>
         
         <a href="{{ url_for('admin.manage_customers') }}" 
-           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['admin.manage_customers', 'admin.customer_orders'] %}bg-volt text-ink translate-x-1 translate-y-1 shadow-none{% else %}bg-white hover:bg-paper{% endif %}">
+           class="flex items-center gap-3 px-4 py-3 border-2 border-ink transition-all shadow-[2px_2px_0px_#121212] {% if request.endpoint in ['admin.manage_customers', 'admin.customer_orders'] %}bg-volt text-ink translate-x-0.5 translate-y-0.5 shadow-none{% else %}bg-white hover:bg-paper active:translate-x-0.5 active:translate-y-0.5{% endif %}">
            <span>👥</span> Daftar Pelanggan
         </a>
       </nav>
     </div>
 
-    <div class="p-5 border-t-2 border-ink">
+    <!-- Info Bawah Sidebar & Logout -->
+    <div class="p-4 sm:p-5 border-t-2 border-ink space-y-3">
       <div class="bg-paper border-2 border-ink p-3 text-xs">
         <p class="font-bold uppercase text-ink/50 text-[10px]">Sistem Toko</p>
         <p class="font-bold text-turf mt-0.5">● GarudaSport Admin v1.0</p>
       </div>
+
+      <a href="{{ url_for('auth.logout') }}" class="flex items-center justify-center gap-2 w-full bg-turf text-white px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:bg-ink transition-all text-xs font-bold uppercase">
+        Keluar
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      </a>
     </div>
   </aside>
 
   <!-- ============ KONTEN UTAMA ============ -->
-  <main class="flex-grow max-w-7xl mx-auto w-full px-5 md:px-8 py-10">
+  <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-8 py-6 sm:py-10">
 
-    <div class="mb-8 border-b-2 border-ink pb-4">
-      <h1 class="font-display text-2xl md:text-3xl uppercase">Manajemen Pelanggan</h1>
-      <p class="text-ink/70 text-sm mt-1">Daftar akun pembeli yang terdaftar di sistem toko.</p>
+    <div class="mb-6 sm:mb-8 border-b-2 border-ink pb-3 sm:pb-4">
+      <h1 class="font-display text-2xl sm:text-3xl uppercase">Manajemen Pelanggan</h1>
+      <p class="text-ink/70 text-xs sm:text-sm mt-0.5">Daftar akun pembeli yang terdaftar di sistem toko.</p>
     </div>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="mb-6 space-y-2">
+        <div class="mb-5 space-y-2">
           {% for category, message in messages %}
-            <div class="px-5 py-3 text-sm font-bold border-2 border-ink {% if category == 'danger' %}bg-turf text-white{% else %}bg-volt text-ink{% endif %} shadow-[4px_4px_0px_#121212]">
+            <div class="px-4 py-3 text-xs sm:text-sm font-bold border-2 border-ink {% if category == 'danger' %}bg-turf text-white{% else %}bg-volt text-ink{% endif %} shadow-[2px_2px_0px_#121212]">
               {{ message }}
             </div>
           {% endfor %}
@@ -141,66 +144,61 @@
       {% endif %}
     {% endwith %}
 
-    <div class="bg-white border-2 border-ink p-6 shadow-[8px_8px_0px_#121212]">
+    <div class="bg-white border-2 border-ink p-4 sm:p-6 shadow-[6px_6px_0px_#121212]">
       
       <!-- HEADER TABEL & PENCARIAN -->
-      <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4 border-b-2 border-ink pb-4">
-        <h2 class="font-display text-lg uppercase text-court">Total: {{ customers|length }} Pelanggan</h2>
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 sm:mb-6 gap-3 border-b-2 border-ink pb-4">
+        <h2 class="font-display text-base sm:text-lg uppercase text-court">Total: {{ customers|length }} Pelanggan</h2>
         
-        <!-- Form Pencarian Kecil -->
         <form action="{{ url_for('admin.manage_customers') }}" method="GET" class="flex w-full md:w-auto">
-          <input type="text" name="q" value="{{ search_query }}" placeholder="Cari nama atau email..." class="w-full md:w-64 px-3 py-2 border-2 border-ink bg-paper text-sm focus:bg-white outline-none">
-          <button type="submit" class="px-4 border-y-2 border-r-2 border-ink bg-ink text-white font-bold text-sm hover:bg-volt hover:text-ink transition-colors cursor-pointer">Cari</button>
+          <input type="text" name="q" value="{{ search_query }}" placeholder="Cari nama atau email..." class="w-full md:w-64 px-3 py-2 border-2 border-ink bg-paper text-xs sm:text-sm focus:bg-white outline-none">
+          <button type="submit" class="px-3.5 sm:px-4 border-y-2 border-r-2 border-ink bg-ink text-white font-bold text-xs sm:text-sm hover:bg-volt hover:text-ink transition-colors shrink-0">Cari</button>
           {% if search_query %}
             <a href="{{ url_for('admin.manage_customers') }}" class="px-3 border-y-2 border-r-2 border-ink bg-turf text-white font-bold text-sm flex items-center hover:bg-ink transition-colors" title="Hapus Pencarian">&times;</a>
           {% endif %}
         </form>
       </div>
 
-      <!-- TABEL PELANGGAN -->
+      <!-- TABEL PELANGGAN (RESPONSIF) -->
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-sm">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm whitespace-nowrap">
           <thead>
-            <tr class="border-b-2 border-ink bg-paper uppercase text-xs font-display">
-              <th class="p-3">ID</th>
-              <th class="p-3">Info Pelanggan</th>
-              <th class="p-3 text-center">Pesanan</th>
-              <th class="p-3 text-right">Total Belanja</th>
-              <th class="p-3 text-center">Status Akun</th>
-              <th class="p-3 text-center">Aksi</th>
+            <tr class="border-b-2 border-ink bg-paper uppercase text-[10px] sm:text-xs font-display">
+              <th class="p-2.5 sm:p-3">ID</th>
+              <th class="p-2.5 sm:p-3">Info Pelanggan</th>
+              <th class="p-2.5 sm:p-3 text-center">Pesanan</th>
+              <th class="p-2.5 sm:p-3 text-right">Total Belanja</th>
+              <th class="p-2.5 sm:p-3 text-center">Status Akun</th>
+              <th class="p-2.5 sm:p-3 text-center">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y-2 divide-ink/10 font-medium">
             {% for c in customers %}
             <tr class="hover:bg-paper/50 transition-colors">
-              <td class="p-3 font-bold">#{{ c.id }}</td>
-              <td class="p-3">
-                <p class="font-bold text-base">{{ c.nama }}</p>
-                <p class="text-xs text-ink/70">{{ c.email }}</p>
-                <p class="text-xs text-ink/70">{{ c.no_telepon if c.no_telepon else '-' }}</p>
+              <td class="p-2.5 sm:p-3 font-bold">#{{ c.id }}</td>
+              <td class="p-2.5 sm:p-3">
+                <p class="font-bold text-sm sm:text-base">{{ c.nama }}</p>
+                <p class="text-[11px] text-ink/70">{{ c.email }}</p>
+                <p class="text-[11px] text-ink/70">{{ c.no_telepon if c.no_telepon else '-' }}</p>
               </td>
-              <td class="p-3 text-center font-bold text-court">{{ c.total_orders }}</td>
-              <td class="p-3 text-right font-display text-ink">{{ c.total_spent | rupiah }}</td>
+              <td class="p-2.5 sm:p-3 text-center font-bold text-court">{{ c.total_orders }}</td>
+              <td class="p-2.5 sm:p-3 text-right font-display text-ink">{{ c.total_spent | rupiah }}</td>
               
-              <!-- INDIKATOR STATUS -->
-              <td class="p-3 text-center">
+              <td class="p-2.5 sm:p-3 text-center">
                 {% if c.status == 'Diblokir' %}
-                  <span class="inline-block bg-turf text-white text-[10px] font-bold uppercase px-2 py-1 border border-ink shadow-[2px_2px_0px_#121212]">Diblokir</span>
+                  <span class="inline-block bg-turf text-white text-[9px] sm:text-[10px] font-bold uppercase px-2 py-0.5 border border-ink shadow-[1px_1px_0px_#121212]">Diblokir</span>
                 {% else %}
-                  <span class="inline-block bg-volt text-ink text-[10px] font-bold uppercase px-2 py-1 border border-ink">Aktif</span>
+                  <span class="inline-block bg-volt text-ink text-[9px] sm:text-[10px] font-bold uppercase px-2 py-0.5 border border-ink">Aktif</span>
                 {% endif %}
               </td>
               
-              <!-- TOMBOL AKSI -->
-              <td class="p-3 text-center space-x-2">
-                <!-- Tombol Lihat Pesanan -->
-                <a href="{{ url_for('admin.customer_orders', user_id=c.id) }}" class="inline-block bg-white text-ink text-xs font-bold px-3 py-1.5 border-2 border-ink hover:bg-court hover:text-white transition-colors">
+              <td class="p-2.5 sm:p-3 text-center space-x-1.5 sm:space-x-2">
+                <a href="{{ url_for('admin.customer_orders', user_id=c.id) }}" class="inline-block bg-white text-ink text-[10px] sm:text-xs font-bold px-2.5 py-1.5 border-2 border-ink hover:bg-court hover:text-white transition-colors">
                   Riwayat
                 </a>
                 
-                <!-- Tombol Blokir / Aktifkan -->
                 <form action="{{ url_for('admin.toggle_customer_status', user_id=c.id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin merubah status akun pelanggan ini?');">
-                  <button type="submit" class="text-xs font-bold px-3 py-1.5 border-2 border-ink transition-colors cursor-pointer
+                  <button type="submit" class="text-[10px] sm:text-xs font-bold px-2.5 py-1.5 border-2 border-ink transition-colors cursor-pointer
                     {% if c.status == 'Diblokir' %} bg-ink text-white hover:bg-volt hover:text-ink 
                     {% else %} bg-turf text-white hover:bg-ink {% endif %}">
                     {% if c.status == 'Diblokir' %} Aktifkan {% else %} Blokir {% endif %}
@@ -210,7 +208,7 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="6" class="p-8 text-center text-ink/50">Tidak ada data pelanggan yang ditemukan.</td>
+              <td colspan="6" class="p-6 sm:p-8 text-center text-ink/50 text-xs sm:text-sm">Tidak ada data pelanggan yang ditemukan.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -221,11 +219,10 @@
   </main>
 
   <!-- ============ FOOTER ============ -->
-  <footer class="bg-white border-t-2 border-ink py-5 text-center text-xs text-ink/50 font-semibold mt-auto">
+  <footer class="bg-white border-t-2 border-ink py-4 text-center text-xs text-ink/50 font-semibold mt-auto">
     &copy; 2026 GarudaSport Admin Panel. Seluruh hak cipta dilindungi.
   </footer>
 
-  <!-- SCRIPT JAVASCRIPT UNTUK SIDEBAR -->
   <script>
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
