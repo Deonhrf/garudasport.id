@@ -185,7 +185,10 @@
             if (res.snap_token) {
               window.snap.pay(res.snap_token, {
                 onSuccess: function(result) {
-                  window.location.href = `/customer/invoice/${res.order_id}?status=success`;
+                  // 1. Buka Invoice di tab baru
+                  window.open(`/customer/invoice/${res.order_id}?status=success`, '_blank');
+                  // 2. Arahkan tab saat ini ke halaman Pesanan Saya
+                  window.location.href = `/customer/orders`;
                 },
                 onPending: function(result) {
                   window.location.href = `/customer/orders?status=pending`;
@@ -205,7 +208,9 @@
               btn.innerHTML = 'Buat Pesanan Sekarang &rarr;';
             }
           } else {
-            window.location.href = res.redirect_url;
+            // Untuk COD: Buka Invoice di tab baru, lalu arahkan tab utama ke Pesanan Saya
+            window.open(res.redirect_url, '_blank');
+            window.location.href = `/customer/orders`;
           }
         } else {
           alert(res.message || 'Gagal memproses pesanan.');

@@ -197,7 +197,10 @@
     function payPending(snapToken, orderId) {
       window.snap.pay(snapToken, {
         onSuccess: function(result) {
-          window.location.href = `/customer/invoice/${orderId}?status=success`;
+          // Buka Invoice di tab baru
+          window.open(`/customer/invoice/${orderId}?status=success`, '_blank');
+          // Reload tab saat ini agar status pesanan langsung terbarui
+          window.location.reload();
         },
         onPending: function(result) {
           window.location.reload();
