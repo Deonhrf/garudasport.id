@@ -16,6 +16,11 @@
     }
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Midtrans Snap JS (Sandbox) -->
+  <script type="text/javascript"
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="{{ client_key }}"></script>
 </head>
 <body class="bg-paper text-ink font-body antialiased min-h-screen flex flex-col selection:bg-volt selection:text-ink">
 
@@ -36,7 +41,7 @@
       <p class="text-ink/70 text-xs sm:text-sm mt-1">Lengkapi alamat, kurir, dan pembayaran.</p>
     </div>
 
-    <form action="{{ url_for('customer.checkout') }}" method="POST" class="grid md:grid-cols-2 gap-6 md:gap-8 items-start">
+    <form id="checkoutForm" onsubmit="submitCheckout(event)" method="POST" class="grid md:grid-cols-2 gap-6 md:gap-8 items-start">
       <!-- FORM ALAMAT -->
       <div class="bg-white border-2 border-ink p-5 sm:p-7 shadow-[6px_6px_0px_#121212] space-y-4 sm:space-y-5">
         <h2 class="font-display text-lg sm:text-xl uppercase mb-1">Informasi Pengiriman</h2>
@@ -121,11 +126,11 @@
         <div class="space-y-2 text-xs sm:text-sm border-b-2 border-ink/10 pb-3">
           <div class="flex justify-between text-ink/70">
             <span>Subtotal Produk:</span>
-            <span class="font-bold">{{ total_harga | rupiah }}</span>
+            <span class="font-bold">{{ subtotal_produk | rupiah if subtotal_produk else total_harga | rupiah }}</span>
           </div>
           <div class="flex justify-between text-ink/70">
             <span>Ongkir:</span>
-            <span class="font-bold">Rp 25.000</span>
+            <span class="font-bold">{{ ongkir | rupiah if ongkir is defined else 'Rp 25.000' }}</span>
           </div>
         </div>
 
@@ -134,7 +139,7 @@
           <span class="font-display text-xl sm:text-2xl text-court">{{ total_harga | rupiah }}</span>
         </div>
 
-        <button type="submit" class="w-full bg-volt text-ink font-display uppercase tracking-wider py-3.5 border-2 border-ink shadow-[3px_3px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs sm:text-sm">
+        <button type="submit" id="btnSubmit" class="w-full bg-volt text-ink font-display uppercase tracking-wider py-3.5 border-2 border-ink shadow-[3px_3px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs sm:text-sm">
           Buat Pesanan Sekarang &rarr;
         </button>
       </div>
@@ -148,6 +153,65 @@
   <script>
     function setAlamat(teksAlamat) {
       document.getElementById('alamat_pengiriman').value = teksAlamat;
+    }
+
+    async function submitCheckout(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.innerText = 'Memproses Pesanan...';
+
+      const form = document.getElementById('checkoutForm');
+      const formData = new FormData(form);
+
+      const data = {
+        alamat_pengiriman: formData.get('alamat_pengiriman'),
+        no_telepon: formData.get('no_telepon'),
+        metode_pembayaran: formData.get('metode_pembayaran'),
+        kurir: formData.get('kurir') || 'JNE Regular'
+      };
+
+      try {
+        const response = await fetch("{{ url_for('customer.checkout') }}", {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const res = await response.json();
+
+        if (res.success) {
+          if (res.is_midtrans && res.snap_token) {
+            window.snap.pay(res.snap_token, {
+              onSuccess: function(result) {
+                window.location.href = `/customer/invoice/${res.order_id}?status=success`;
+              },
+              onPending: function(result) {
+                window.location.href = `/customer/orders?status=pending`;
+              },
+              onError: function(result) {
+                alert('Pembayaran gagal atau dibatalkan.');
+                btn.disabled = false;
+                btn.innerHTML = 'Buat Pesanan Sekarang &rarr;';
+              },
+              onClose: function() {
+                window.location.href = `/customer/orders`;
+              }
+            });
+          } else {
+            window.location.href = res.redirect_url;
+          }
+        } else {
+          alert(res.message || 'Gagal memproses pesanan.');
+          btn.disabled = false;
+          btn.innerHTML = 'Buat Pesanan Sekarang &rarr;';
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Terjadi kesalahan jaringan.');
+        btn.disabled = false;
+        btn.innerHTML = 'Buat Pesanan Sekarang &rarr;';
+      }
     }
   </script>
 </body>

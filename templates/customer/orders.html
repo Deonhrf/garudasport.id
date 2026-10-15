@@ -17,6 +17,11 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Midtrans Snap JS (Sandbox) -->
+  <script type="text/javascript"
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="{{ client_key }}"></script>
 </head>
 <body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen selection:bg-volt selection:text-ink">
 
@@ -47,7 +52,7 @@
       </div>
       <nav class="p-4 space-y-2 font-bold uppercase text-xs">
         <a href="{{ url_for('customer.dashboard') }}" class="flex items-center gap-3 px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">📊 Dashboard Saya</a>
-        <a href="{{ url_for('catalog') }}" class="flex items-center gap-3 px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">👟 Belanja Sepatu</a>
+        <a href="{{ url_for('catalog') }}" class="flex items-center gap-3 px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">🛒 Belanja Sepatu</a>
         <a href="{{ url_for('customer.order_history') }}" class="flex items-center gap-3 px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] bg-volt text-ink">📦 Pesanan Saya</a>
         <a href="{{ url_for('chat.customer_chat') }}" class="flex items-center gap-3 px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">💬 Chat Admin</a>
         <a href="{{ url_for('customer.profile') }}" class="flex items-center gap-3 px-4 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212] bg-white hover:bg-paper">👤 Profil & Pengaturan</a>
@@ -115,9 +120,15 @@
             📄 Invoice
           </a>
           {% if order.status_pesanan == 'Menunggu Pembayaran' %}
-            <a href="{{ url_for('customer.payment_instruction', order_id=order.id) }}" class="bg-volt text-ink font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212]">
-              Bayar Sekarang &rarr;
-            </a>
+            {% if order.snap_token %}
+              <button type="button" onclick="payPending('{{ order.snap_token }}', '{{ order.id }}')" class="bg-volt text-ink font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212]">
+                Bayar Sekarang &rarr;
+              </button>
+            {% else %}
+              <a href="{{ url_for('customer.payment_instruction', order_id=order.id) }}" class="bg-volt text-ink font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212]">
+                Bayar Sekarang &rarr;
+              </a>
+            {% endif %}
           {% elif order.status_pesanan == 'Menunggu Verifikasi' or order.status_pesanan == 'Diproses' %}
             <button type="button" onclick="openRefundModal('{{ order.id }}')" class="bg-turf text-white font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212]">
               Batalkan & Refund
@@ -181,6 +192,23 @@
     }
     function toggleRefundModal() {
       document.getElementById('refundModal').classList.add('hidden');
+    }
+
+    function payPending(snapToken, orderId) {
+      window.snap.pay(snapToken, {
+        onSuccess: function(result) {
+          window.location.href = `/customer/invoice/${orderId}?status=success`;
+        },
+        onPending: function(result) {
+          window.location.reload();
+        },
+        onError: function(result) {
+          alert('Pembayaran gagal.');
+        },
+        onClose: function() {
+          console.log('Pop-up pembayaran ditutup.');
+        }
+      });
     }
   </script>
 </body>

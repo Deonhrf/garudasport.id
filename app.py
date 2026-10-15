@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, jsonify
 from config import Config, get_db_connection
 from blueprints.customer import customer_bp
 from blueprints.chat import chat_bp
 import pymysql
+import midtransclient
+import os
 
 
 app = Flask(__name__)
@@ -19,8 +21,19 @@ app.register_blueprint(customer_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(chat_bp)
 # --- FILTER RUPIAH UNTUK JINJA2 ---
-# --- FILTER RUPIAH UNTUK JINJA2 ---
-# --- FILTER RUPIAH UNTUK JINJA2 ---
+
+
+# Mengambil key dari environment variable Railway / Local
+MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', 'SB-Mid-server-Mid-server-awM2edpzq162Ig2U9uynS5wf')
+MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-Mid-client-oRb_QKiAIxTmcFNR')
+
+snap = midtransclient.Snap(
+    is_production=False,  # Set False untuk mode Sandbox
+    server_key=MIDTRANS_SERVER_KEY,
+    client_key=MIDTRANS_CLIENT_KEY
+)
+
+
 def format_rupiah(value) -> str:
     try:
         # HAPUS * 1000 karena data di database sekarang sudah utuh (misal: 649000)
@@ -30,6 +43,99 @@ def format_rupiah(value) -> str:
         return "Rp 0"
 
 app.jinja_env.filters["rupiah"] = format_rupiah
+
+
+# =========================================================================
+# [BARU] WEBHOOK CALLBACK MIDTRANS (Verifikasi Pembayaran Otomatis Real-time)
+# =========================================================================
+@app.route('/api/payment-notification', methods=['POST'])
+def payment_notification():
+    notification_data = request.get_json()
+    if not notification_data:
+        return jsonify({'status': 'error', 'message': 'No data received'}), 400
+
+    order_id_raw = str(notification_data.get('order_id', ''))  # Contoh ID: GS-105
+    order_id = order_id_raw.replace('GS-', '')
+    transaction_status = notification_data.get('transaction_status')
+    fraud_status = notification_data.get('fraud_status')
+    transaction_id = notification_data.get('transaction_id')
+
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM orders WHERE id = %s", (order_id,))
+            order = cursor.fetchone()
+            if not order:
+                return jsonify({'status': 'not_found'}), 404
+
+            current_status = order['status_pesanan']
+
+            # Pembayaran LUNAS via QRIS / Virtual Account
+            if transaction_status in ['capture', 'settlement']:
+                if fraud_status == 'accept' or not fraud_status:
+                    cursor.execute("""
+                        UPDATE orders 
+                        SET status_pesanan = 'Diproses', 
+                            midtrans_transaction_id = %s
+                        WHERE id = %s
+                    """, (transaction_id, order_id))
+
+                    if current_status != 'Diproses':
+                        # Notifikasi untuk Pembeli
+                        cursor.execute("""
+                            INSERT INTO notifications (user_id, title, message, type, is_read)
+                            VALUES (%s, %s, %s, %s, 0)
+                        """, (order['user_id'], "Pembayaran Berhasil", f"Pembayaran untuk pesanan #{order_id} telah berhasil diverifikasi otomatis oleh Midtrans.", "order"))
+
+                        # Notifikasi untuk Admin
+                        cursor.execute("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
+                        admin_obj = cursor.fetchone()
+                        admin_id = admin_obj['id'] if admin_obj else 1
+                        cursor.execute("""
+                            INSERT INTO notifications (user_id, title, message, type, is_read)
+                            VALUES (%s, %s, %s, %s, 0)
+                        """, (admin_id, "Pesanan Lunas (Midtrans)", f"Pesanan #{order_id} telah dilunasi via Midtrans.", "order"))
+
+            # Pembayaran Gagal / Dibatalkan / Kadaluarsa
+            elif transaction_status in ['cancel', 'deny', 'expire']:
+                if current_status != 'Dibatalkan':
+                    # Kembalikan stok produk
+                    cursor.execute("SELECT product_id, quantity FROM order_items WHERE order_id = %s", (order_id,))
+                    items = cursor.fetchall()
+                    for item in items:
+                        cursor.execute("UPDATE products SET stock = stock + %s WHERE id = %s", (item['quantity'], item['product_id']))
+
+                    cursor.execute("""
+                        UPDATE orders 
+                        SET status_pesanan = 'Dibatalkan', 
+                            midtrans_transaction_id = %s
+                        WHERE id = %s
+                    """, (transaction_id, order_id))
+
+                    cursor.execute("""
+                        INSERT INTO notifications (user_id, title, message, type, is_read)
+                        VALUES (%s, %s, %s, %s, 0)
+                    """, (order['user_id'], "Pembayaran Dibatalkan / Kadaluarsa", f"Pesanan #{order_id} dibatalkan karena pembayaran tidak diselesaikan.", "order"))
+
+            # Pembayaran Menunggu
+            elif transaction_status == 'pending':
+                cursor.execute("""
+                    UPDATE orders 
+                    SET status_pesanan = 'Menunggu Pembayaran', 
+                        midtrans_transaction_id = %s
+                    WHERE id = %s
+                """, (transaction_id, order_id))
+
+            connection.commit()
+    except Exception as e:
+        connection.rollback()
+        print(f"ERROR MIDTRANS WEBHOOK: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    finally:
+        connection.close()
+
+    return jsonify({'status': 'OK'}), 200
+
 
 # --- HALAMAN UTAMA / BERANDA ---
 @app.route('/')

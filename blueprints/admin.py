@@ -22,7 +22,7 @@ def admin_required(f):
 
 
 # ==========================================
-# [BARU] CONTEXT PROCESSOR ADMIN (HEADER GLOBAL)
+# CONTEXT PROCESSOR ADMIN (HEADER GLOBAL)
 # ==========================================
 @admin_bp.context_processor
 def inject_admin_data():
@@ -59,8 +59,7 @@ def dashboard():
             res_rev = cursor.fetchone()
             stats['revenue'] = res_rev['total_revenue'] if res_rev and res_rev['total_revenue'] else 0
             
-            # (Sisa kode di bawahnya tetap dibiarkan persis sama)
-            cursor.execute("SELECT COUNT(*) as pending FROM orders WHERE status_pesanan = 'Menunggu Verifikasi'")
+            cursor.execute("SELECT COUNT(*) as pending FROM orders WHERE status_pesanan IN ('Menunggu Verifikasi', 'Menunggu Pembayaran')")
             pending_res = cursor.fetchone()
             stats['pending'] = pending_res['pending'] if pending_res else 0
             
@@ -305,7 +304,7 @@ def delete_product(product_id):
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            # [BARU] Hapus dari product_variants terlebih dahulu agar tidak terjadi error relasi database
+            # Hapus dari product_variants terlebih dahulu agar tidak terjadi error relasi database
             cursor.execute("DELETE FROM product_variants WHERE product_id = %s", (product_id,))
             
             # Hapus produk dari products
@@ -321,7 +320,7 @@ def delete_product(product_id):
     return redirect(url_for('admin.manage_products'))
 
 
-# --- [MODIFIKASI] MANAJEMEN PELANGGAN (TAMBAH FITUR PENCARIAN) ---
+# --- MANAJEMEN PELANGGAN (DENGAN FITUR PENCARIAN) ---
 @admin_bp.route('/customers')
 @admin_required
 def manage_customers():
@@ -365,7 +364,7 @@ def manage_customers():
     return render_template('admin/customers.html', customers=customers, search_query=search_query)
 
 
-# --- [BARU] FITUR BLOKIR / AKTIFKAN AKUN PELANGGAN ---
+# --- FITUR BLOKIR / AKTIFKAN AKUN PELANGGAN ---
 @admin_bp.route('/customer/toggle-status/<int:user_id>', methods=['POST'])
 @admin_required
 def toggle_customer_status(user_id):
@@ -418,7 +417,7 @@ def customer_orders(user_id):
     return render_template('admin/customer_orders.html', customer=customer, orders=orders)
 
 
-# --- [MODIFIKASI] TAMBAH PRODUK BARU (DENGAN BRAND, DESKRIPSI, STOK UKURAN) ---
+# --- TAMBAH PRODUK BARU (DENGAN BRAND, DESKRIPSI, STOK UKURAN) ---
 @admin_bp.route('/products/add', methods=['GET', 'POST'])
 @admin_required
 def add_product():
@@ -500,7 +499,7 @@ def manage_orders():
             
             if status_filter != 'Semua':
                 if status_filter == 'Menunggu Verifikasi':
-                    query += " WHERE o.status_pesanan = 'Menunggu Verifikasi'"
+                    query += " WHERE o.status_pesanan IN ('Menunggu Verifikasi', 'Menunggu Pembayaran')"
                 elif status_filter == 'Diproses':
                     query += " WHERE o.status_pesanan IN ('Diproses', 'Dikirim')"
                 elif status_filter == 'Menunggu Konfirmasi Refund':
@@ -514,7 +513,7 @@ def manage_orders():
             cursor.execute(query, params)
             orders = cursor.fetchall()
             
-            cursor.execute("SELECT COUNT(*) as cnt FROM orders WHERE status_pesanan = 'Menunggu Verifikasi'")
+            cursor.execute("SELECT COUNT(*) as cnt FROM orders WHERE status_pesanan IN ('Menunggu Verifikasi', 'Menunggu Pembayaran')")
             count_verif = cursor.fetchone()['cnt']
             
             cursor.execute("SELECT COUNT(*) as cnt FROM orders WHERE status_pesanan = 'Menunggu Konfirmasi Refund'")
@@ -629,7 +628,7 @@ def sales_reports():
     )
 
 # ==========================================
-# [BARU] RUTE CETAK INVOICE DARI SISI ADMIN
+# RUTE CETAK INVOICE DARI SISI ADMIN
 # ==========================================
 @admin_bp.route('/invoice/<int:order_id>')
 @admin_required

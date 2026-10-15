@@ -1,10 +1,21 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app, jsonify
 from config import get_db_connection
 import os
+import midtransclient
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 
 customer_bp = Blueprint('customer', __name__, url_prefix='/customer')
+
+# Konfigurasi Midtrans Client Key & Server Key
+MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', 'SB-Mid-server-Mid-server-awM2edpzq162Ig2U9uynS5wf')
+MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-Mid-client-oRb_QKiAIxTmcFNR')
+
+snap = midtransclient.Snap(
+    is_production=False,
+    server_key=MIDTRANS_SERVER_KEY,
+    client_key=MIDTRANS_CLIENT_KEY
+)
 
 # --- 1. DASHBOARD UTAMA USER ---
 @customer_bp.route('/dashboard')
@@ -221,7 +232,7 @@ def order_history():
             if selected_status == 'Semua':
                 sql = """
                     SELECT id, total_harga, metode_pembayaran, status_pesanan, 
-                           alamat_pengiriman, no_telepon, created_at
+                           alamat_pengiriman, no_telepon, created_at, snap_token
                     FROM orders
                     WHERE user_id = %s
                     ORDER BY created_at DESC
@@ -230,7 +241,7 @@ def order_history():
             else:
                 sql = """
                     SELECT id, total_harga, metode_pembayaran, status_pesanan, 
-                           alamat_pengiriman, no_telepon, created_at
+                           alamat_pengiriman, no_telepon, created_at, snap_token
                     FROM orders
                     WHERE user_id = %s AND status_pesanan = %s
                     ORDER BY created_at DESC
@@ -243,7 +254,7 @@ def order_history():
     finally:
         connection.close()
         
-    return render_template('customer/orders.html', orders=orders)
+    return render_template('customer/orders.html', orders=orders, client_key=MIDTRANS_CLIENT_KEY)
 
 
 @customer_bp.route('/order/cancel/<int:order_id>', methods=['POST'])
@@ -295,7 +306,6 @@ def cancel_order(order_id):
     return redirect(url_for('customer.order_history'))
 
 
-# --- 5. DETAIL PRODUK ---
 # --- 5. DETAIL PRODUK ---
 @customer_bp.route('/product/<int:product_id>')
 def product_detail(product_id):
@@ -371,7 +381,6 @@ def add_to_cart(product_id):
 
 
 # --- 7. CHECKOUT & PEMPROSESAN PESANAN ---
-# --- 7. CHECKOUT & PEMPROSESAN PESANAN ---
 @customer_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     if 'user_id' not in session:
@@ -383,13 +392,12 @@ def checkout():
     cursor = connection.cursor()
     
     try:
-        # [PERBAIKAN 1]: Tangkap ID barang keranjang yang DICENTANG saja
+        # Tangkap ID barang keranjang yang DICENTANG
         if request.method == 'GET':
             selected_items = request.args.getlist('selected_items')
             if not selected_items:
                 flash('Pilih minimal satu produk untuk di-checkout.', 'danger')
                 return redirect(url_for('customer.cart'))
-            # Simpan pilihan ke session agar tidak hilang saat klik bayar
             session['checkout_items'] = selected_items 
         else:
             selected_items = session.get('checkout_items', [])
@@ -404,7 +412,6 @@ def checkout():
         cursor.execute("SELECT * FROM user_addresses WHERE user_id = %s", (user_id,))
         user_addresses = cursor.fetchall()
 
-        # [PERBAIKAN 2]: Minta database HANYA mengambil barang yang ID-nya dicentang
         format_strings = ','.join(['%s'] * len(selected_items))
         query_cart = f"""
             SELECT c.id as cart_id, c.product_id, c.quantity, c.size, p.price, p.name, p.stock 
@@ -426,21 +433,34 @@ def checkout():
         
         # JIKA PENGGUNA KLIK TOMBOL "BAYAR SEKARANG" (POST)
         if request.method == 'POST':
-            alamat = request.form.get('alamat_pengiriman', '').strip()
-            no_telp = request.form.get('no_telepon', '').strip()
-            metode = request.form.get('metode_pembayaran', 'Transfer Bank')
-            kurir_pilihan = request.form.get('kurir', 'JNE Regular')
+            # Dukung input baik dari Form Submit biasa maupun AJAX Request
+            if request.is_json:
+                json_data = request.get_json()
+                alamat = json_data.get('alamat_pengiriman', '').strip()
+                no_telp = json_data.get('no_telepon', '').strip()
+                metode = json_data.get('metode_pembayaran', 'Transfer Bank')
+                kurir_pilihan = json_data.get('kurir', 'JNE Regular')
+            else:
+                alamat = request.form.get('alamat_pengiriman', '').strip()
+                no_telp = request.form.get('no_telepon', '').strip()
+                metode = request.form.get('metode_pembayaran', 'Transfer Bank')
+                kurir_pilihan = request.form.get('kurir', 'JNE Regular')
             
             kurir = f"{kurir_pilihan} (Gratis Ongkir)" if subtotal_produk > 500000 else f"{kurir_pilihan} (Rp 25.000)"
             
             if not alamat or not no_telp:
+                if request.is_json:
+                    return jsonify({'success': False, 'message': 'Alamat dan nomor telepon wajib diisi.'}), 400
                 flash('Alamat dan nomor telepon wajib diisi.', 'danger')
                 return redirect(url_for('customer.checkout'))
 
             for item in cart_items:
                 if item['stock'] < item['quantity']:
                     connection.rollback()
-                    flash(f"Mohon maaf, stok untuk produk '{item['name']}' tidak mencukupi.", "danger")
+                    msg = f"Mohon maaf, stok untuk produk '{item['name']}' tidak mencukupi."
+                    if request.is_json:
+                        return jsonify({'success': False, 'message': msg}), 400
+                    flash(msg, "danger")
                     return redirect(url_for('customer.cart'))
 
                 cursor.execute("UPDATE products SET stock = stock - %s WHERE id = %s", (item['quantity'], item['product_id']))
@@ -459,20 +479,43 @@ def checkout():
                     VALUES (%s, %s, %s, %s, %s)
                 """, (order_id, item['product_id'], item['quantity'], item['price'], item['size']))
             
-            # [PERBAIKAN 3]: HANYA menghapus barang yang dicentang dari keranjang (barang lain dibiarkan)
+            # Hapus barang yang dicentang dari keranjang
             query_delete = f"DELETE FROM cart WHERE user_id = %s AND id IN ({format_strings})"
             cursor.execute(query_delete, params)
             
-            # Bersihkan ingatan memori pilihan centang
             session.pop('checkout_items', None)
 
-            # [NOTIFIKASI] 1. Kirim notifikasi ke Customer bahwa pesanan berhasil dibuat
+            # INTEGRASI MIDTRANS: Minta Snap Token jika bukan COD
+            snap_token = None
+            if 'COD' not in metode.upper():
+                try:
+                    enabled_payments = ["gopay", "shopeepay", "qris"] if 'qris' in metode.lower() else ["bca_va", "bni_va", "bri_va", "mandiri_va", "permata_va", "gopay", "shopeepay", "qris"]
+                    param = {
+                        "transaction_details": {
+                            "order_id": f"GS-{order_id}",
+                            "gross_amount": int(total_harga)
+                        },
+                        "enabled_payments": enabled_payments,
+                        "customer_details": {
+                            "first_name": user_profile.get('nama', 'Customer') if user_profile else 'Customer',
+                            "email": user_profile.get('email', '') if user_profile else '',
+                            "phone": no_telp
+                        }
+                    }
+                    transaction = snap.create_transaction(param)
+                    snap_token = transaction.get('token')
+                    if snap_token:
+                        cursor.execute("UPDATE orders SET snap_token = %s WHERE id = %s", (snap_token, order_id))
+                except Exception as snap_err:
+                    print(f"ERROR MIDTRANS SNAP: {snap_err}")
+
+            # Notifikasi Customer
             cursor.execute("""
                 INSERT INTO notifications (user_id, title, message, type, is_read)
                 VALUES (%s, %s, %s, %s, 0)
             """, (user_id, "Pesanan Berhasil Dibuat", f"Pesanan #{order_id} berhasil dibuat. Silakan selesaikan pembayaran.", "order"))
 
-            # [NOTIFIKASI] 2. Kirim notifikasi ke Admin bahwa ada pesanan masuk baru
+            # Notifikasi Admin
             cursor.execute("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
             admin_obj = cursor.fetchone()
             admin_id = admin_obj['id'] if admin_obj else 1
@@ -484,9 +527,28 @@ def checkout():
 
             connection.commit()
             
+            # Jika Panggilan dari JavaScript / AJAX
+            if request.is_json:
+                if 'COD' in metode.upper():
+                    return jsonify({
+                        'success': True,
+                        'is_midtrans': False,
+                        'redirect_url': url_for('customer.invoice', order_id=order_id)
+                    })
+                else:
+                    return jsonify({
+                        'success': True,
+                        'is_midtrans': True,
+                        'snap_token': snap_token,
+                        'order_id': order_id,
+                        'client_key': MIDTRANS_CLIENT_KEY,
+                        'redirect_url': url_for('customer.payment_instruction', order_id=order_id)
+                    })
+
+            # Jika Form Submit Standar
             if 'COD' in metode.upper():
                 flash('Pesanan COD berhasil dibuat dan sedang diproses!', 'success')
-                return redirect(url_for('customer.order_history'))
+                return redirect(url_for('customer.invoice', order_id=order_id))
             else:
                 flash('Pesanan berhasil dibuat! Silakan lakukan pembayaran.', 'success')
                 return redirect(url_for('customer.payment_instruction', order_id=order_id))
@@ -494,6 +556,8 @@ def checkout():
     except Exception as e:
         connection.rollback()
         print(f"ERROR CHECKOUT: {e}")
+        if request.is_json:
+            return jsonify({'success': False, 'message': 'Terjadi kesalahan saat memproses pesanan.'}), 500
         flash('Terjadi kesalahan saat memproses pesanan.', 'danger')
         return redirect(url_for('customer.cart'))
         
@@ -507,7 +571,8 @@ def checkout():
                            total_harga=total_harga, 
                            cart_items=cart_items, 
                            user=user_profile, 
-                           addresses=user_addresses)
+                           addresses=user_addresses,
+                           client_key=MIDTRANS_CLIENT_KEY)
 
 # --- 8. MANAJEMEN BUKU ALAMAT ---
 @customer_bp.route('/address/add', methods=['POST'])
@@ -622,7 +687,7 @@ def payment_instruction(order_id):
     finally:
         connection.close()
         
-    return render_template('customer/payment.html', order=order, order_items=order_items)
+    return render_template('customer/payment.html', order=order, order_items=order_items, client_key=MIDTRANS_CLIENT_KEY)
 
 
 @customer_bp.route('/profile/security', methods=['POST'])
