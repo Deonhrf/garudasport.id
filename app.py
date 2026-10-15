@@ -23,12 +23,11 @@ app.register_blueprint(chat_bp)
 # --- FILTER RUPIAH UNTUK JINJA2 ---
 
 
-# Mengambil key dari environment variable Railway / Local (SUDAH DIPERBAIKI)
-MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', 'SB-Mid-server-awM2edpzq162Ig2U9uynS5wf')
-MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-oRb_QKiAIxTmcFNR')
-
+# Mengambil key dari environment variable Railway / Local Default
+MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', '')
+MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', '')
 snap = midtransclient.Snap(
-    is_production=False,  # Set False untuk mode Sandbox
+    is_production=False,  # Tetap False karena ini Mode Sandbox
     server_key=MIDTRANS_SERVER_KEY,
     client_key=MIDTRANS_CLIENT_KEY
 )

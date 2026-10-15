@@ -115,10 +115,11 @@
           </div>
         </div>
 
-        <div class="pt-3 border-t-2 border-ink flex flex-wrap items-center justify-end gap-2">
+  <div class="pt-3 border-t-2 border-ink flex flex-wrap items-center justify-end gap-2">
           <a href="{{ url_for('customer.invoice', order_id=order.id) }}" target="_blank" class="bg-court text-white font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5">
             📄 Invoice
           </a>
+
           {% if order.status_pesanan == 'Menunggu Pembayaran' %}
             {% if order.snap_token %}
               <button type="button" onclick="payPending('{{ order.snap_token }}', '{{ order.id }}')" class="bg-volt text-ink font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212]">
@@ -129,10 +130,28 @@
                 Bayar Sekarang &rarr;
               </a>
             {% endif %}
+            
+            <!-- Tombol Batal untuk Pesanan Belum Dibayar -->
+            <form action="{{ url_for('customer.cancel_order', order_id=order.id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini? Stok akan dikembalikan.');">
+              <button type="submit" class="bg-paper text-ink font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212] hover:bg-turf hover:text-white">
+                Batalkan
+              </button>
+            </form>
+
           {% elif order.status_pesanan == 'Menunggu Verifikasi' or order.status_pesanan == 'Diproses' %}
-            <button type="button" onclick="openRefundModal('{{ order.id }}')" class="bg-turf text-white font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212]">
-              Batalkan & Refund
-            </button>
+            {% if 'COD' in order.metode_pembayaran.upper() %}
+              <!-- Jika COD: Pembatalan Langsung tanpa Modal Refund Bank -->
+              <form action="{{ url_for('customer.cancel_order', order_id=order.id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan COD ini? Stok akan dikembalikan.');">
+                <button type="submit" class="bg-turf text-white font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212]">
+                  Batalkan Pesanan
+                </button>
+              </form>
+            {% else %}
+              <!-- Jika Transfer/Midtrans: Modal Refund Bank -->
+              <button type="button" onclick="openRefundModal('{{ order.id }}')" class="bg-turf text-white font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212]">
+                Batalkan & Refund
+              </button>
+            {% endif %}
           {% endif %}
         </div>
       </div>

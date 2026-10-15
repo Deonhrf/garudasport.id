@@ -7,12 +7,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 customer_bp = Blueprint('customer', __name__, url_prefix='/customer')
 
-# Konfigurasi Midtrans Client Key & Server Key (SUDAH DIPERBAIKI)
-MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', 'SB-Mid-server-awM2edpzq162Ig2U9uynS5wf')
-MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-oRb_QKiAIxTmcFNR')
-
+# Konfigurasi Midtrans Client Key & Server Key
+MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY', '')
+MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY', '')
 snap = midtransclient.Snap(
-    is_production=False,
+    is_production=False,  # Tetap False karena ini Mode Sandbox
     server_key=MIDTRANS_SERVER_KEY,
     client_key=MIDTRANS_CLIENT_KEY
 )
@@ -252,6 +251,7 @@ def order_history():
     return render_template('customer/orders.html', orders=orders, client_key=MIDTRANS_CLIENT_KEY)
 
 
+# --- 4. RIWAYAT PESANAN (PEMBATALAN LANGSUNG UNTUK COD & UNPAID) ---
 @customer_bp.route('/order/cancel/<int:order_id>', methods=['POST'])
 def cancel_order(order_id):
     if 'user_id' not in session:
@@ -262,16 +262,30 @@ def cancel_order(order_id):
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
+            # Ambil data pesanan
             cursor.execute("""
-                SELECT id FROM orders 
-                WHERE id = %s AND user_id = %s AND status_pesanan = 'Menunggu Pembayaran'
+                SELECT id, status_pesanan, metode_pembayaran 
+                FROM orders 
+                WHERE id = %s AND user_id = %s
             """, (order_id, user_id))
             order = cursor.fetchone()
             
             if not order:
-                flash('Pesanan tidak dapat dibatalkan atau tidak ditemukan.', 'danger')
+                flash('Pesanan tidak ditemukan.', 'danger')
+                return redirect(url_for('customer.order_history'))
+
+            status = order['status_pesanan']
+            metode = order['metode_pembayaran'] or ''
+
+            # Validasi: Hanya bisa dibatalkan langsung jika Menunggu Pembayaran ATAU COD yang masih Diproses/Menunggu Verifikasi
+            is_cod = 'COD' in metode.upper()
+            can_direct_cancel = (status == 'Menunggu Pembayaran') or (is_cod and status in ['Menunggu Verifikasi', 'Diproses'])
+
+            if not can_direct_cancel:
+                flash('Pesanan ini tidak dapat dibatalkan langsung.', 'danger')
                 return redirect(url_for('customer.order_history'))
             
+            # 1. KEMBALIKAN STOK PRODUK KE DATABASE
             cursor.execute("SELECT product_id, quantity FROM order_items WHERE order_id = %s", (order_id,))
             items = cursor.fetchall()
             
@@ -280,25 +294,37 @@ def cancel_order(order_id):
                     UPDATE products SET stock = stock + %s WHERE id = %s
                 """, (item['quantity'], item['product_id']))
                 
+            # 2. UBAH STATUS PESANAN MENJADI DIBATALKAN
             cursor.execute("""
                 UPDATE orders SET status_pesanan = 'Dibatalkan' WHERE id = %s
             """, (order_id,))
             
+            # 3. NOTIFIKASI KE CUSTOMER
             cursor.execute("""
                 INSERT INTO notifications (user_id, title, message, type, is_read)
                 VALUES (%s, %s, %s, %s, 0)
-            """, (user_id, "Pesanan Dibatalkan", f"Pesanan #{order_id} berhasil dibatalkan.", "order"))
+            """, (user_id, "Pesanan Dibatalkan", f"Pesanan #{order_id} berhasil dibatalkan dan stok produk telah dikembalikan.", "order"))
+
+            # 4. NOTIFIKASI KE ADMIN
+            cursor.execute("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
+            admin_obj = cursor.fetchone()
+            admin_id = admin_obj['id'] if admin_obj else 1
+            
+            cursor.execute("""
+                INSERT INTO notifications (user_id, title, message, type, is_read)
+                VALUES (%s, %s, %s, %s, 0)
+            """, (admin_id, "Pesanan Dibatalkan Pembeli", f"Pesanan #{order_id} ({metode}) telah dibatalkan oleh pembeli. Stok otomatis dikembalikan.", "order"))
 
             connection.commit()
             flash(f'Pesanan #{order_id} berhasil dibatalkan.', 'success')
     except Exception as e:
         connection.rollback()
+        print(f"ERROR CANCEL ORDER: {e}")
         flash(f'Terjadi kesalahan: {e}', 'danger')
     finally:
         connection.close()
         
     return redirect(url_for('customer.order_history'))
-
 
 # --- 5. DETAIL PRODUK ---
 @customer_bp.route('/product/<int:product_id>')
@@ -760,7 +786,6 @@ def invoice(order_id):
         
     return render_template('customer/invoice.html', order=order, order_items=order_items)
 
-
 @customer_bp.route('/order/refund/<int:order_id>', methods=['POST'])
 def request_refund(order_id):
     if 'user_id' not in session:
@@ -780,7 +805,7 @@ def request_refund(order_id):
     try:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT id FROM orders 
+                SELECT id, metode_pembayaran FROM orders 
                 WHERE id = %s AND user_id = %s AND status_pesanan IN ('Menunggu Verifikasi', 'Diproses')
             """, (order_id, user_id))
             order = cursor.fetchone()
@@ -789,6 +814,11 @@ def request_refund(order_id):
                 flash('Pesanan tidak valid untuk pengajuan refund.', 'danger')
                 return redirect(url_for('customer.order_history'))
             
+            # Jika pesanan COD, tolak pengajuan refund rekening
+            if 'COD' in (order.get('metode_pembayaran') or '').upper():
+                flash('Pesanan COD belum dibayar sehingga tidak memerlukan refund rekening. Gunakan tombol Batalkan Pesanan.', 'warning')
+                return redirect(url_for('customer.order_history'))
+
             cursor.execute("""
                 UPDATE orders 
                 SET status_pesanan = 'Menunggu Konfirmasi Refund', 
