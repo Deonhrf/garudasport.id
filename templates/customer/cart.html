@@ -4,148 +4,118 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Keranjang Belanja — GarudaSport</title>
-
-  <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          colors: {
-            ink: '#121212',
-            volt: '#D4FF3F',
-            paper: '#F1F1EF',
-            court: '#2F6FFF',
-            turf: '#FF5A1F',
-          },
-          fontFamily: {
-            display: ['"Archivo Black"', 'sans-serif'],
-            body: ['Inter', 'sans-serif'],
-          },
-        },
-      },
-    };
+          colors: { ink: '#121212', volt: '#D4FF3F', paper: '#F1F1EF', court: '#2F6FFF', turf: '#FF5A1F' },
+          fontFamily: { display: ['"Archivo Black"', 'sans-serif'], body: ['Inter', 'sans-serif'] },
+        }
+      }
+    }
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen">
+<body class="bg-paper text-ink font-body antialiased flex flex-col min-h-screen selection:bg-volt selection:text-ink">
 
-  <!-- ============ NAVBAR ============ -->
-  <header class="bg-white border-b-2 border-ink sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-5 md:px-8 h-18 py-4 flex items-center justify-between">
-      
-      <!-- Logo -->
-      <a href="{{ url_for('index') }}" class="font-display text-2xl md:text-3xl tracking-tight">
+  <!-- NAVBAR -->
+  <header class="bg-white border-b-2 border-ink sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 h-16 sm:h-18 py-3 flex items-center justify-between">
+      <a href="{{ url_for('customer.dashboard') }}" class="font-display text-xl sm:text-2xl md:text-3xl tracking-tight">
         GARUDA<span class="text-volt bg-ink px-1">SPORT</span>
       </a>
       
-      <!-- Nav Kanan -->
-      <div class="flex items-center gap-5 md:gap-8">
-        <a href="{{ url_for('catalog') }}" class="text-sm font-bold border-b-2 border-transparent hover:border-ink transition-colors pb-0.5">
-          &larr; <span class="hidden md:inline">Belanja lagi</span> yuk!
-        </a>
-        
-        <!-- Ikon Keranjang dengan Badge -->
-        <a href="{{ url_for('customer.cart') }}" aria-label="Keranjang belanja" class="relative flex items-center justify-center hover:text-court transition-colors group">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          </svg>
-          {% if cart_count and cart_count > 0 %}
-          <span class="absolute -top-2 -right-2.5 bg-volt text-ink text-[10px] font-display px-1.5 py-0.5 border border-ink shadow-[1px_1px_0px_#121212] rounded-full">
-            {{ cart_count }}
-          </span>
-          {% endif %}
+      <div class="flex items-center gap-3 sm:gap-4">
+        <a href="{{ url_for('catalog') }}" class="text-xs sm:text-sm font-bold border-2 border-ink bg-paper px-2.5 py-1.5 sm:px-3 sm:py-1.5 hover:bg-volt transition-all shadow-[2px_2px_0px_#121212]">
+          &larr; <span class="hidden sm:inline">Belanja lagi</span> yuk!
         </a>
       </div>
-      
     </div>
   </header>
 
-  <!-- ============ KONTEN KERANJANG ============ -->
-  <main class="flex-grow max-w-7xl mx-auto w-full px-5 md:px-8 py-10 md:py-14">
-    
-    <div class="mb-8 border-b-2 border-ink pb-4">
-      <h1 class="font-display text-3xl md:text-4xl uppercase">Keranjang Belanja</h1>
-      <p class="text-ink/70 font-medium text-sm mt-1">Pilih produk yang ingin kamu checkout, atur jumlah, atau hapus item.</p>
+  <!-- KONTEN KERANJANG -->
+  <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-8 py-6 sm:py-12">
+    <div class="mb-6 border-b-2 border-ink pb-3 sm:pb-4">
+      <h1 class="font-display text-2xl sm:text-4xl uppercase">Keranjang Belanja</h1>
+      <p class="text-ink/70 font-medium text-xs sm:text-sm mt-1">Atur jumlah item atau hapus sepatu yang tidak diinginkan.</p>
     </div>
 
     {% if cart_items %}
     <form action="{{ url_for('customer.checkout') }}" method="GET" id="cartForm">
-      <div class="grid lg:grid-cols-3 gap-10 items-start">
+      <div class="grid lg:grid-cols-3 gap-6 lg:gap-10 items-start">
         
-        <!-- Daftar Produk di Keranjang (Kiri) -->
-        <div class="lg:col-span-2 space-y-4">
-          
-          <!-- Opsi Pilih Semua -->
+        <!-- DAFTAR ITEM -->
+        <div class="lg:col-span-2 space-y-3 sm:space-y-4">
           <div class="bg-white border-2 border-ink p-3 flex items-center justify-between text-xs font-bold uppercase tracking-wider">
             <label class="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" id="selectAll" checked class="w-4 h-4 accent-ink cursor-pointer">
               <span>Pilih Semua Produk</span>
             </label>
-            <span class="text-ink/60">{{ cart_items | length }} Jenis Produk</span>
+            <span class="text-ink/60">{{ cart_items | length }} Jenis</span>
           </div>
 
           {% for item in cart_items %}
-          <div class="bg-white border-2 border-ink p-4 sm:p-5 shadow-[4px_4px_0px_#121212] flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div class="bg-white border-2 border-ink p-3.5 sm:p-5 shadow-[4px_4px_0px_#121212] flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
             
-            <!-- Checkbox Pilih Item -->
-            <div class="flex items-center gap-4 w-full sm:w-auto">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
               <input type="checkbox" name="selected_items" value="{{ item.cart_id }}" checked class="item-checkbox w-5 h-5 accent-ink cursor-pointer shrink-0">
               
-              <div class="w-20 h-20 bg-paper border-2 border-ink shrink-0 overflow-hidden">
-                <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}" class="w-full h-full object-cover">
+              <!-- Gambar Sepatu Safe Fit -->
+              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-paper border-2 border-ink shrink-0 p-1 overflow-hidden flex items-center justify-center">
+                <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}" class="w-full h-full object-contain">
+              </div>
+
+              <div class="sm:hidden flex-grow">
+                <p class="text-[9px] font-bold uppercase text-ink/50">{{ item.brand }}</p>
+                <h3 class="font-bold text-xs sm:text-base leading-tight truncate max-w-[180px]">{{ item.name }}</h3>
+                <p class="text-[11px] font-semibold text-ink/70 mt-0.5">Size: <span class="text-court font-bold">{{ item.size }}</span></p>
               </div>
             </div>
             
-            <!-- Informasi Produk -->
-            <div class="flex-grow">
+            <!-- Desktop Info -->
+            <div class="hidden sm:block flex-grow">
               <p class="text-[10px] font-bold uppercase text-ink/50">{{ item.brand }}</p>
               <h3 class="font-bold text-sm sm:text-base leading-snug">{{ item.name }}</h3>
               <p class="text-xs font-semibold text-ink/70 mt-1">Ukuran (EUR): <span class="text-court font-bold">{{ item.size }}</span></p>
               <p class="font-display text-base text-court mt-1" data-price="{{ item.price }}">{{ item.price | rupiah }}</p>
             </div>
 
-            <!-- Aksi: Kontrol Jumlah & Hapus -->
-            <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-ink/10">
-              
-              <!-- UI Tombol Pengubah Kuantitas (Menggunakan Data Atribut) -->
+            <!-- Kontrol Kuantitas & Harga Mobile -->
+            <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-ink/10">
+              <p class="sm:hidden font-display text-sm text-court" data-price="{{ item.price }}">{{ item.price | rupiah }}</p>
+
               <div class="flex items-center border-2 border-ink bg-paper shadow-[2px_2px_0px_#121212]">
-                <button type="button" class="action-qty px-2.5 py-1 font-bold text-sm hover:bg-ink hover:text-white transition-colors" data-url="{{ url_for('customer.update_cart_item', cart_id=item.cart_id) }}" data-qty="{{ item.quantity - 1 }}" data-max="{{ item.stock }}">-</button>
-                
-                <input type="number" value="{{ item.quantity }}" readonly class="w-10 text-center font-bold text-xs bg-transparent focus:outline-none">
-                
-                <button type="button" class="action-qty px-2.5 py-1 font-bold text-sm hover:bg-ink hover:text-white transition-colors" data-url="{{ url_for('customer.update_cart_item', cart_id=item.cart_id) }}" data-qty="{{ item.quantity + 1 }}" data-max="{{ item.stock }}">+</button>
+                <button type="button" class="action-qty px-2.5 py-1 font-bold text-xs sm:text-sm hover:bg-ink hover:text-white transition-colors" data-url="{{ url_for('customer.update_cart_item', cart_id=item.cart_id) }}" data-qty="{{ item.quantity - 1 }}" data-max="{{ item.stock }}">-</button>
+                <input type="number" value="{{ item.quantity }}" readonly class="w-8 sm:w-10 text-center font-bold text-xs bg-transparent focus:outline-none">
+                <button type="button" class="action-qty px-2.5 py-1 font-bold text-xs sm:text-sm hover:bg-ink hover:text-white transition-colors" data-url="{{ url_for('customer.update_cart_item', cart_id=item.cart_id) }}" data-qty="{{ item.quantity + 1 }}" data-max="{{ item.stock }}">+</button>
               </div>
 
-              <!-- Tombol Hapus (Menggunakan Data Atribut) -->
               <button type="button" class="action-delete text-xs font-bold text-turf hover:underline uppercase tracking-wider cursor-pointer" data-url="{{ url_for('customer.delete_cart_item', cart_id=item.cart_id) }}">
                 Hapus
               </button>
-
             </div>
 
           </div>
           {% endfor %}
         </div>
 
-        <!-- Ringkasan Belanja / Checkout Box (Kanan) -->
-        <div class="bg-white border-2 border-ink p-6 md:p-8 shadow-[6px_6px_0px_#121212] sticky top-24">
-          <h2 class="font-display text-xl mb-4 border-b-2 border-ink pb-2">Ringkasan Pesanan</h2>
+        <!-- RINGKASAN BELANJA -->
+        <div class="bg-white border-2 border-ink p-5 sm:p-7 shadow-[6px_6px_0px_#121212] lg:sticky lg:top-24">
+          <h2 class="font-display text-lg sm:text-xl mb-3 sm:mb-4 border-b-2 border-ink pb-2">Ringkasan Pesanan</h2>
           
-          <div class="space-y-3 text-sm font-bold mb-6">
+          <div class="space-y-2.5 text-xs sm:text-sm font-bold mb-5">
             <div class="flex justify-between">
               <span class="text-ink/60 font-medium">Produk Dipilih</span>
               <span id="selectedCount">{{ cart_items | length }} Produk</span>
             </div>
             <div class="flex justify-between text-base border-t-2 border-ink pt-3">
               <span>Total Harga</span>
-              <span id="grandTotal" class="font-display text-xl text-court">Rp 0</span>
+              <span id="grandTotal" class="font-display text-lg sm:text-xl text-court">Rp 0</span>
             </div>
           </div>
 
-          <button type="submit" class="w-full block text-center bg-volt text-ink font-display text-sm uppercase tracking-wider py-4 border-2 border-ink shadow-[4px_4px_0px_#121212] hover:translate-x-1 hover:-translate-y-1 transition-all">
+          <button type="submit" class="w-full block text-center bg-volt text-ink font-display text-xs sm:text-sm uppercase tracking-wider py-3.5 border-2 border-ink shadow-[3px_3px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 transition-all">
             Lanjut ke Pembayaran &rarr;
           </button>
         </div>
@@ -153,140 +123,88 @@
       </div>
     </form>
     {% else %}
-    <!-- Jika Keranjang Kosong -->
-    <div class="bg-white border-2 border-ink p-12 text-center shadow-[6px_6px_0px_#121212] max-w-lg mx-auto">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto text-ink/30 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      <p class="font-bold text-lg mb-1">Keranjang Belanjamu Masih Kosong</p>
-      <p class="text-ink/60 text-sm mb-6">Belum ada sepatu futsal yang dimasukkan ke keranjang.</p>
-      <a href="{{ url_for('catalog') }}" class="inline-block bg-volt text-ink font-bold px-6 py-3 border-2 border-ink shadow-[2px_2px_0px_#121212]">
+    <div class="bg-white border-2 border-ink p-8 sm:p-12 text-center shadow-[6px_6px_0px_#121212] max-w-lg mx-auto">
+      <p class="font-bold text-base sm:text-lg mb-1">Keranjang Belanjamu Kosong</p>
+      <p class="text-ink/60 text-xs sm:text-sm mb-5">Belum ada sepatu futsal yang dimasukkan.</p>
+      <a href="{{ url_for('catalog') }}" class="inline-block bg-volt text-ink font-bold px-5 py-2.5 text-xs sm:text-sm border-2 border-ink shadow-[2px_2px_0px_#121212]">
         Mulai Belanja Sekarang
       </a>
     </div>
     {% endif %}
-
   </main>
 
-  <!-- ============ SCRIPT JS CLEAN CODE ============ -->
+  <footer class="bg-white border-t-2 border-ink mt-auto py-4 text-center text-xs text-ink/50 font-semibold">
+    &copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.
+  </footer>
+
   <script>
-    // 1. Format Rupiah
     function formatRupiah(angka) {
       return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka).replace('Rp', 'Rp ');
     }
-
-    // 2. Kalkulasi Total Harga dan Jumlah Barang Terpilih
     function calculateTotal() {
       const checkboxes = document.querySelectorAll('.item-checkbox');
-      let total = 0;
-      let count = 0;
-
+      let total = 0, count = 0;
       checkboxes.forEach(cb => {
         if (cb.checked) {
           const card = cb.closest('.bg-white');
           const price = parseInt(card.querySelector('[data-price]').getAttribute('data-price'));
           const qty = parseInt(card.querySelector('input[type="number"]').value);
-          
-          total += (price * qty);
-          count++;
+          total += (price * qty); count++;
         }
       });
-
       document.getElementById('grandTotal').textContent = formatRupiah(total);
       document.getElementById('selectedCount').textContent = count + ' Produk';
     }
-
-    // 3. Event Listener untuk Checkbox (Item & Select All)
     const selectAllCheckbox = document.getElementById('selectAll');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-
     if (selectAllCheckbox) {
       selectAllCheckbox.addEventListener('change', function() {
         itemCheckboxes.forEach(cb => cb.checked = this.checked);
         calculateTotal();
       });
-
       itemCheckboxes.forEach(cb => {
         cb.addEventListener('change', function() {
-          const allChecked = Array.from(itemCheckboxes).every(c => c.checked);
-          selectAllCheckbox.checked = allChecked;
+          selectAllCheckbox.checked = Array.from(itemCheckboxes).every(c => c.checked);
           calculateTotal();
         });
       });
     }
-
-    // 4. Proses Request API (Fetch) untuk Kuantitas dan Hapus
     async function processCartAction(url, bodyData = null) {
       try {
         const options = { method: 'POST' };
         if (bodyData) options.body = bodyData;
-
         const response = await fetch(url, options);
-        if (response.ok) {
-          window.location.reload();
-        } else {
-          alert('Gagal memproses permintaan.');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
+        if (response.ok) { window.location.reload(); } 
+        else { alert('Gagal memproses permintaan.'); }
+      } catch (error) { console.error('Error:', error); }
     }
-
-    // 5. Mendaftarkan Event Click untuk Tombol Kuantitas (+ / -)
     document.querySelectorAll('.action-qty').forEach(button => {
       button.addEventListener('click', function() {
         const url = this.getAttribute('data-url');
         const newQty = parseInt(this.getAttribute('data-qty'));
         const maxStock = parseInt(this.getAttribute('data-max'));
-
         if (newQty < 1) return;
-        if (newQty > maxStock) {
-          alert('Jumlah melebihi stok yang tersedia!');
-          return;
-        }
-
+        if (newQty > maxStock) { alert('Jumlah melebihi stok yang tersedia!'); return; }
         const formData = new FormData();
         formData.append('quantity', newQty);
-        
-        // Nonaktifkan tombol sementara proses berjalan agar tidak diklik berkali-kali
-        this.disabled = true; 
-        processCartAction(url, formData);
+        this.disabled = true; processCartAction(url, formData);
       });
     });
-
-    // 6. Mendaftarkan Event Click untuk Tombol Hapus
     document.querySelectorAll('.action-delete').forEach(button => {
       button.addEventListener('click', function() {
         if (!confirm('Hapus produk ini dari keranjang?')) return;
-        
-        const url = this.getAttribute('data-url');
-        this.disabled = true;
-        processCartAction(url);
+        this.disabled = true; processCartAction(this.getAttribute('data-url'));
       });
     });
-
-    // 7. Validasi Form Checkout (Cegah lanjut jika tidak ada barang dicentang)
     const cartForm = document.getElementById('cartForm');
     if (cartForm) {
       cartForm.addEventListener('submit', function(e) {
-        const checkedItems = document.querySelectorAll('.item-checkbox:checked').length;
-        if (checkedItems === 0) {
-          e.preventDefault(); // Hentikan proses pindah halaman
-          alert('Silakan pilih minimal satu produk untuk dilanjutkan ke pembayaran.');
+        if (document.querySelectorAll('.item-checkbox:checked').length === 0) {
+          e.preventDefault(); alert('Silakan pilih minimal satu produk.');
         }
       });
     }
-
-    // 8. Hitung total saat halaman pertama kali dimuat
-    window.onload = function() {
-      if (itemCheckboxes.length > 0) calculateTotal();
-    };
+    window.onload = function() { if (itemCheckboxes.length > 0) calculateTotal(); };
   </script>
-
-  <!-- ============ FOOTER ============ -->
-  <footer class="bg-white border-t-2 border-ink mt-auto">
-    <div class="max-w-7xl mx-auto px-5 md:px-8 py-5 text-center text-xs text-ink/50 font-semibold">
-      &copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.
-    </div>
-  </footer>
-
 </body>
 </html>

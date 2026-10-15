@@ -10,118 +10,91 @@
       theme: {
         extend: {
           colors: { ink: '#121212', volt: '#D4FF3F', paper: '#F1F1EF', court: '#2F6FFF', turf: '#FF5A1F' },
-          fontFamily: { display: ['"Archivo Black"', 'sans-serif'], body: ['Inter', 'sans-serif'], },
+          fontFamily: { display: ['"Archivo Black"', 'sans-serif'], body: ['Inter', 'sans-serif'] },
         }
       }
     }
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="bg-paper text-ink font-body antialiased min-h-screen flex flex-col">
+<body class="bg-paper text-ink font-body antialiased min-h-screen flex flex-col selection:bg-volt selection:text-ink">
 
-<header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b-2 border-ink">
-    <div class="max-w-7xl mx-auto px-5 md:px-8">
-      <div class="flex items-center justify-between h-18 py-3">
+  <!-- ============ NAVBAR ============ -->
+  <header class="sticky top-0 z-40 bg-white border-b-2 border-ink">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 h-16 sm:h-18 py-3 flex items-center justify-between">
+      <a href="{{ url_for('customer.dashboard') }}" class="font-display text-xl sm:text-2xl md:text-3xl tracking-tight">
+        GARUDA<span class="text-volt bg-ink px-1">SPORT</span>
+      </a>
 
-        <!-- Logo -->
-        <a href="{{ url_for('customer.dashboard') }}" class="font-display text-2xl md:text-3xl tracking-tight">
-          GARUDA<span class="text-volt bg-ink px-1">SPORT</span>
-        </a>
-
-        <!-- Aksi kanan -->
-        <div class="flex items-center gap-4 md:gap-5">
-        <button onclick="history.back()" class="hidden md:inline text-sm font-bold border-b-2 border-transparent hover:border-ink transition-colors pb-0.5 cursor-pointer bg-transparent">
-          &larr; Kembali
+      <div class="flex items-center gap-2.5 sm:gap-4">
+        <button onclick="history.back()" class="inline-flex items-center gap-1 text-xs sm:text-sm font-bold border-2 border-ink bg-paper px-2.5 py-1.5 sm:px-3 sm:py-1.5 hover:bg-volt transition-all shadow-[2px_2px_0px_#121212]">
+          &larr; <span class="hidden sm:inline">Kembali</span>
         </button>
-          <div class="hidden sm:flex items-center gap-2 text-sm font-bold bg-volt px-4 py-2 border-2 border-ink shadow-[2px_2px_0px_#121212]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span>{{ session.nama | default('Akun') }}</span>
-          </div>
 
-          <a href="{{ url_for('customer.cart') }}" aria-label="Keranjang belanja" class="relative flex items-center justify-center hover:text-court transition-colors group">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-            
-            {% if cart_count and cart_count > 0 %}
-            <span class="absolute -top-2 -right-2.5 bg-volt text-ink text-[10px] font-display px-1.5 py-0.5 border border-ink shadow-[1px_1px_0px_#121212] group-hover:bg-court group-hover:text-white transition-colors rounded-full">
-              {{ cart_count }}
-            </span>
-            {% endif %}
-          </a>
-        </div>
+        <a href="{{ url_for('customer.cart') }}" aria-label="Keranjang belanja" class="relative p-2 sm:p-2.5 border-2 border-ink bg-white hover:bg-volt transition-all shadow-[2px_2px_0px_#121212] group">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          {% if cart_count and cart_count > 0 %}
+          <span class="absolute -top-1.5 -right-1.5 bg-volt text-ink text-[10px] font-display px-1.5 py-0.2 border border-ink shadow-[1px_1px_0px_#121212] group-hover:bg-court group-hover:text-white transition-colors rounded-full">
+            {{ cart_count }}
+          </span>
+          {% endif %}
+        </a>
       </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-5 md:px-8 py-10 md:py-16 flex-grow w-full">
-    
-    <div class="grid md:grid-cols-2 gap-10 lg:gap-14 items-start">
+  <!-- ============ KONTEN UTAMA ============ -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-12 flex-grow w-full">
+    <div class="grid md:grid-cols-2 gap-6 lg:gap-12 items-start">
       
-      <!-- Kolom Kiri: Gambar Utama -->
-      <div class="space-y-4">
-        <div class="bg-white border-2 border-ink p-4 shadow-[8px_8px_0px_#121212]">
-<!-- Kolom Kiri: Gambar Utama -->
-          <div class="relative aspect-square overflow-hidden bg-paper border-2 border-ink flex justify-center items-center">
-            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}" class="w-full h-full object-cover">
-            
-            <!-- Badge Brand & Jenis Sol (Kiri Atas, Bersusun) Sesuai Beranda -->
-            <div class="absolute top-4 left-4 flex flex-col gap-1.5">
-              <span class="text-xs font-bold px-3 py-1 rounded-full text-white bg-ink uppercase w-max">
-                {{ product.brand }}
-              </span>
-              {% if product.outsole %}
-              <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-ink text-ink bg-white uppercase w-max shadow-[2px_2px_0px_#121212]">
-                SOL: {{ product.outsole }}
-              </span>
-              {% endif %}
-            </div>
+      <!-- GAMBAR PRODUK (OBJECT-CONTAIN AGAR TIDAK TERPOTONG) -->
+      <div class="bg-white border-2 border-ink p-3 sm:p-4 shadow-[6px_6px_0px_#121212]">
+        <div class="relative w-full aspect-square bg-paper border-2 border-ink flex items-center justify-center p-4 overflow-hidden">
+          <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}" class="w-full h-full object-contain hover:scale-105 transition-transform duration-300">
+          
+          <div class="absolute top-3 left-3 flex flex-col gap-1.5">
+            <span class="text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full text-white bg-ink uppercase w-max shadow-[2px_2px_0px_#121212]">
+              {{ product.brand }}
+            </span>
+            {% if product.outsole %}
+            <span class="text-[9px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full border border-ink text-ink bg-white uppercase w-max shadow-[2px_2px_0px_#121212]">
+              SOL: {{ product.outsole }}
+            </span>
+            {% endif %}
           </div>
         </div>
       </div>
 
-      <!-- Kolom Kanan: Informasi, Ukuran, & Aksi Pembelian -->
-      <div class="bg-white border-2 border-ink p-6 md:p-8 shadow-[8px_8px_0px_#121212] flex flex-col">
-        <p class="text-xs font-bold uppercase tracking-widest text-ink/50 mb-2">{{ product.brand }}</p>
-        <h1 class="font-display text-2xl md:text-3xl uppercase mb-4 leading-tight">{{ product.name }}</h1>
+      <!-- INFORMASI & FORM PEMBELIAN -->
+      <div class="bg-white border-2 border-ink p-5 sm:p-8 shadow-[6px_6px_0px_#121212] flex flex-col">
+        <p class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/50 mb-1 sm:mb-2">{{ product.brand }}</p>
+        <h1 class="font-display text-2xl sm:text-3xl uppercase mb-3 leading-tight">{{ product.name }}</h1>
         
         <div class="flex items-baseline gap-3 mb-4 pb-4 border-b-2 border-ink/10">
-          <span class="font-display text-3xl text-court">{{ product.price | rupiah }}</span>
+          <span class="font-display text-2xl sm:text-3xl text-court">{{ product.price | rupiah }}</span>
         </div>
 
-        <!-- ============================================== -->
-        <!-- [BARU] KOTAK SPESIFIKASI & DESKRIPSI PRODUK -->
-        <!-- ============================================== -->
-        <div class="mb-6 bg-paper border-2 border-ink p-4 space-y-3">
-          <h3 class="font-display text-sm uppercase text-ink border-b-2 border-ink/20 pb-2">Detail & Spesifikasi</h3>
-          
-          <ul class="text-xs font-bold space-y-1.5 text-ink/80">
-            <li><span class="inline-block w-24 text-ink/50">Merek</span> : <span class="uppercase">{{ product.brand }}</span></li>
-            <li><span class="inline-block w-24 text-ink/50">Kategori</span> : <span>{{ product.category }}</span></li>
-            <li><span class="inline-block w-24 text-ink/50">Jenis Outsole</span> : <span>{{ product.outsole }}</span></li>
+        <div class="mb-6 bg-paper border-2 border-ink p-4 space-y-2.5">
+          <h3 class="font-display text-xs sm:text-sm uppercase text-ink border-b-2 border-ink/20 pb-2">Detail & Spesifikasi</h3>
+          <ul class="text-xs font-bold space-y-1 text-ink/80">
+            <li><span class="inline-block w-20 text-ink/50">Merek</span> : <span class="uppercase">{{ product.brand }}</span></li>
+            <li><span class="inline-block w-20 text-ink/50">Kategori</span> : <span>{{ product.category }}</span></li>
+            <li><span class="inline-block w-20 text-ink/50">Outsole</span> : <span>{{ product.outsole }}</span></li>
           </ul>
-
-          <div class="border-t-2 border-ink/20 pt-3 mt-3">
-            <p class="text-xs sm:text-sm text-ink/90 leading-relaxed whitespace-pre-line">
-              {{ product.description }}
-            </p>
+          <div class="border-t-2 border-ink/20 pt-2.5 mt-2">
+            <p class="text-xs text-ink/90 leading-relaxed whitespace-pre-line">{{ product.description }}</p>
           </div>
         </div>
-        <!-- ============================================== -->
 
-        <!-- Form Pemrosesan Pesanan -->
-        <form action="{{ url_for('customer.add_to_cart', product_id=product.id) }}" method="POST" class="space-y-6">
-          
-          <!-- Pilihan Ukuran Sepatu -->
+        <form action="{{ url_for('customer.add_to_cart', product_id=product.id) }}" method="POST" class="space-y-5">
           <div>
             <div class="flex justify-between items-center mb-2">
-              <label class="text-xs font-bold uppercase tracking-wider text-ink/70">Pilih Ukuran (EUR):</label>
-              <span id="selectedSizeInfo" class="text-xs font-bold text-court">Silakan pilih ukuran</span>
+              <label class="text-xs font-bold uppercase tracking-wider text-ink/70">Ukuran (EUR):</label>
+              <span id="selectedSizeInfo" class="text-xs font-bold text-court">Pilih ukuran</span>
             </div>
             <div class="flex flex-wrap gap-2">
               {% set stock_variants = variants if variants else {'38': 0, '39': 0, '40': 0, '41': 0, '42': 0, '43': 0, '44': 0} %}
@@ -129,7 +102,7 @@
               {% set s_val = stock_variants.get(size, 0) %}
               <label class="cursor-pointer {% if s_val == 0 %}opacity-40{% endif %}">
                 <input type="radio" name="size" value="{{ size }}" data-stock="{{ s_val }}" onchange="handleSizeChange(this)" class="peer sr-only" required>
-                <div class="w-12 h-10 border-2 border-ink flex items-center justify-center font-bold text-sm bg-paper peer-checked:bg-ink peer-checked:text-white transition-all shadow-[2px_2px_0px_#121212] peer-checked:shadow-none peer-checked:translate-x-0.5 peer-checked:translate-y-0.5">
+                <div class="w-11 h-9 sm:w-12 sm:h-10 border-2 border-ink flex items-center justify-center font-bold text-xs sm:text-sm bg-paper peer-checked:bg-ink peer-checked:text-white transition-all shadow-[2px_2px_0px_#121212] peer-checked:shadow-none peer-checked:translate-x-0.5 peer-checked:translate-y-0.5">
                   {{ size }}
                 </div>
               </label>
@@ -137,138 +110,83 @@
             </div>
           </div>
 
-          <!-- Pengatur Jumlah (Quantity) -->
           <div>
             <label class="text-xs font-bold uppercase tracking-wider text-ink/70 block mb-2">Jumlah:</label>
-            <div class="flex items-center w-36 border-2 border-ink bg-paper shadow-[2px_2px_0px_#121212]">
-              <button type="button" onclick="decrementQty()" class="px-3 py-2 font-bold hover:bg-ink hover:text-white transition-colors">-</button>
-              <input type="number" id="quantity" name="quantity" value="1" min="1" max="1" class="w-full text-center bg-transparent font-bold focus:outline-none text-sm" readonly>
-              <button type="button" onclick="incrementQty()" class="px-3 py-2 font-bold hover:bg-ink hover:text-white transition-colors">+</button>
+            <div class="flex items-center w-32 sm:w-36 border-2 border-ink bg-paper shadow-[2px_2px_0px_#121212]">
+              <button type="button" onclick="decrementQty()" class="px-3 py-1.5 sm:py-2 font-bold hover:bg-ink hover:text-white transition-colors">-</button>
+              <input type="number" id="quantity" name="quantity" value="1" min="1" max="1" class="w-full text-center bg-transparent font-bold focus:outline-none text-xs sm:text-sm" readonly>
+              <button type="button" onclick="incrementQty()" class="px-3 py-1.5 sm:py-2 font-bold hover:bg-ink hover:text-white transition-colors">+</button>
             </div>
           </div>
 
-          <!-- Informasi Peringatan Stok -->
-          <div class="p-3 bg-paper border-2 border-ink space-y-1">
-            <p id="stockStatusText" class="text-xs font-bold text-ink/70">
-              ℹ️ Pilih ukuran terlebih dahulu untuk melihat ketersediaan stok.
-            </p>
-            <p id="stockWarningText" class="text-xs font-bold text-turf hidden">
-              ⚠️ Jumlah yang Anda minta melebihi sisa stok ukuran ini!
-            </p>
+          <div class="p-3 bg-paper border-2 border-ink">
+            <p id="stockStatusText" class="text-xs font-bold text-ink/70">ℹ️ Pilih ukuran untuk melihat stok.</p>
+            <p id="stockWarningText" class="text-xs font-bold text-turf hidden">⚠️ Melebihi sisa stok!</p>
           </div>
 
-          <!-- DUA TOMBOL AKSI: Keranjang & Beli Sekarang -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t-2 border-ink/10">
-            <!-- Tombol Tambah ke Keranjang -->
-            <button 
-              type="submit" 
-              name="action" 
-              value="add_cart"
-              id="btnCart"
-              disabled
-              class="py-3.5 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center bg-gray-200 text-gray-400 cursor-not-allowed"
-            >
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t-2 border-ink/10">
+            <button type="submit" name="action" value="add_cart" id="btnCart" disabled class="py-3 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center bg-gray-200 text-gray-400 cursor-not-allowed">
               + Masukkan Keranjang
             </button>
-
-            <!-- Tombol Beli Langsung (Checkout Instan) -->
-            <button 
-              type="submit" 
-              name="action" 
-              value="buy_now"
-              id="btnBuy"
-              disabled
-              class="py-3.5 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center flex items-center justify-center bg-gray-200 text-gray-400 cursor-not-allowed"
-            >
+            <button type="submit" name="action" value="buy_now" id="btnBuy" disabled class="py-3 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center flex items-center justify-center bg-gray-200 text-gray-400 cursor-not-allowed">
               Beli Sekarang
             </button>
           </div>
-
         </form>
-
       </div>
 
     </div>
-
   </main>
+
+  <footer class="bg-white border-t-2 border-ink mt-auto py-4 text-center text-xs text-ink/50 font-semibold">
+    &copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.
+  </footer>
 
   <script>
     let currentMaxStock = 0;
-
     function handleSizeChange(radio) {
       currentMaxStock = parseInt(radio.getAttribute('data-stock')) || 0;
       const sizeVal = radio.value;
       const qtyInput = document.getElementById('quantity');
       const stockStatus = document.getElementById('stockStatusText');
       const stockWarning = document.getElementById('stockWarningText');
-      
       const btnCart = document.getElementById('btnCart');
       const btnBuy = document.getElementById('btnBuy');
       const infoText = document.getElementById('selectedSizeInfo');
 
       infoText.innerText = `Size ${sizeVal} Dipilih`;
-      qtyInput.value = 1; // Reset jumlah ke 1 tiap ganti ukuran
+      qtyInput.value = 1;
 
       if (currentMaxStock > 0) {
-        stockStatus.innerHTML = `✅ Stok untuk Ukuran ${sizeVal}: <strong class="text-court">${currentMaxStock} pcs</strong> tersedia.`;
+        stockStatus.innerHTML = `✅ Stok Size ${sizeVal}: <strong class="text-court">${currentMaxStock} pcs</strong>`;
         stockStatus.className = "text-xs font-bold text-ink";
         stockWarning.classList.add('hidden');
-        
-        // Aktifkan kedua tombol
-        btnCart.disabled = false;
-        btnBuy.disabled = false;
-
-        btnCart.className = "py-3.5 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center bg-volt text-ink shadow-[4px_4px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none cursor-pointer";
-        btnBuy.className = "py-3.5 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center flex items-center justify-center bg-turf text-white shadow-[4px_4px_0px_#121212] hover:translate-x-1 hover:translate-y-1 hover:shadow-none cursor-pointer";
-
+        btnCart.disabled = false; btnBuy.disabled = false;
+        btnCart.className = "py-3 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center bg-volt text-ink shadow-[3px_3px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer";
+        btnBuy.className = "py-3 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center flex items-center justify-center bg-turf text-white shadow-[3px_3px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer";
       } else {
-        stockStatus.innerHTML = `❌ Maaf, stok untuk Ukuran ${sizeVal} sudah habis!`;
+        stockStatus.innerHTML = `❌ Stok Size ${sizeVal} habis!`;
         stockStatus.className = "text-xs font-bold text-red-600";
         stockWarning.classList.add('hidden');
-
-        // Nonaktifkan kedua tombol
-        btnCart.disabled = true;
-        btnBuy.disabled = true;
-
-        const disabledClass = "py-3.5 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center bg-gray-200 text-gray-400 cursor-not-allowed";
-        btnCart.className = disabledClass;
-        btnBuy.className = disabledClass + " flex items-center justify-center";
+        btnCart.disabled = true; btnBuy.disabled = true;
+        const disabledClass = "py-3 px-4 border-2 border-ink font-bold uppercase tracking-wider text-xs transition-all text-center bg-gray-200 text-gray-400 cursor-not-allowed";
+        btnCart.className = disabledClass; btnBuy.className = disabledClass + " flex items-center justify-center";
       }
     }
-
     function incrementQty() {
       const qtyInput = document.getElementById('quantity');
       const stockWarning = document.getElementById('stockWarningText');
       let val = parseInt(qtyInput.value);
-
-      if (currentMaxStock === 0) {
-        alert("Silakan pilih ukuran sepatu terlebih dahulu.");
-        return;
-      }
-
-      if (val < currentMaxStock) {
-        qtyInput.value = val + 1;
-        stockWarning.classList.add('hidden');
-      } else {
-        stockWarning.classList.remove('hidden');
-      }
+      if (currentMaxStock === 0) { alert("Pilih ukuran sepatu terlebih dahulu."); return; }
+      if (val < currentMaxStock) { qtyInput.value = val + 1; stockWarning.classList.add('hidden'); } 
+      else { stockWarning.classList.remove('hidden'); }
     }
-
     function decrementQty() {
       const qtyInput = document.getElementById('quantity');
       const stockWarning = document.getElementById('stockWarningText');
       let val = parseInt(qtyInput.value);
-
-      if (val > 1) {
-        qtyInput.value = val - 1;
-        stockWarning.classList.add('hidden');
-      }
+      if (val > 1) { qtyInput.value = val - 1; stockWarning.classList.add('hidden'); }
     }
   </script>
-
-  <footer class="bg-white border-t-2 border-ink py-5 text-center text-xs text-ink/50 font-semibold">
-    &copy; 2026 GarudaSport. Seluruh hak cipta dilindungi.
-  </footer>
-
 </body>
 </html>
