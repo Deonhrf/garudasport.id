@@ -166,16 +166,23 @@
           </div>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-3 text-xs mb-3">
-          <div>
-            <p class="font-bold">No. Telp: <span class="font-normal">{{ order.no_telepon }}</span></p>
-            <p class="text-ink/70 mt-0.5 truncate"><strong>Alamat:</strong> {{ order.alamat_pengiriman }}</p>
+          <div class="grid sm:grid-cols-2 gap-3 text-xs mb-3">
+            <div>
+              <p class="font-bold">No. Telp: <span class="font-normal">{{ order.no_telepon }}</span></p>
+              <p class="text-ink/70 mt-0.5 truncate"><strong>Alamat:</strong> {{ order.alamat_pengiriman }}</p>
+              
+              <!-- TAMPILKAN NOMOR RESI JIKA ADA -->
+              {% if order.no_resi %}
+              <div class="mt-2 inline-block bg-volt text-ink font-bold px-2.5 py-1 border border-ink text-[11px] shadow-[2px_2px_0px_#121212]">
+                📦 No. Resi: <span class="font-mono">{{ order.no_resi }}</span>
+              </div>
+              {% endif %}
+            </div>
+            <div class="sm:text-right">
+              <p class="text-[10px] font-bold uppercase text-ink/50">Total Pembayaran</p>
+              <p class="font-display text-xl sm:text-2xl text-court">{{ order.total_harga | rupiah }}</p>
+            </div>
           </div>
-          <div class="sm:text-right">
-            <p class="text-[10px] font-bold uppercase text-ink/50">Total Pembayaran</p>
-            <p class="font-display text-xl sm:text-2xl text-court">{{ order.total_harga | rupiah }}</p>
-          </div>
-        </div>
 
         <div class="pt-3 border-t-2 border-ink flex flex-wrap items-center justify-end gap-2">
           <a href="{{ url_for('customer.invoice', order_id=order.id) }}" target="_blank" class="bg-court text-white font-bold px-3 py-2 text-[11px] uppercase border-2 border-ink shadow-[2px_2px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5">

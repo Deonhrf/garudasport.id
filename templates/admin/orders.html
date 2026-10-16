@@ -182,7 +182,10 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-ink/10 pb-3 mb-3 sm:pb-4 sm:mb-4 gap-2">
           <div>
             <span class="text-[10px] sm:text-xs font-bold bg-ink text-volt px-2 py-0.5 border border-ink">ID: #{{ ord.id }}</span>
-            <span class="text-[11px] sm:text-xs text-ink/70 ml-1.5 sm:ml-2">{{ ord.created_at.strftime('%d %B %Y - %H:%M') if ord.created_at else '' }}</span>
+            <!-- PENYESUAIAN FORMAT WAKTU WIB -->
+            <span class="text-[11px] sm:text-xs text-ink/70 ml-1.5 sm:ml-2 font-semibold">
+              {{ ord.created_at.strftime('%d %B %Y - %H:%M WIB') if ord.created_at else '' }}
+            </span>
           </div>
           <span class="px-2.5 py-0.5 text-[10px] sm:text-xs font-bold uppercase border-2 border-ink 
             {% if ord.status_pesanan == 'Selesai' %} bg-volt text-ink 
@@ -199,6 +202,13 @@
             <p class="font-bold">{{ ord.customer_name }} <span class="text-xs font-normal text-ink/60">({{ ord.customer_email }})</span></p>
             <p class="text-ink/70 text-[11px] sm:text-xs mt-0.5">Telp: {{ ord.no_telepon }} | Alamat: {{ ord.alamat_pengiriman }}</p>
             <p class="text-[11px] sm:text-xs text-ink/60 mt-0.5">Metode Bayar: <span class="font-bold uppercase">{{ ord.metode_pembayaran }}</span></p>
+
+            <!-- TAMPILKAN RESI JIKA TERSEDIA -->
+            {% if ord.no_resi %}
+            <div class="mt-2 inline-block bg-volt text-ink font-bold px-2 py-0.5 border border-ink text-[11px]">
+              📦 No. Resi: <span class="font-mono">{{ ord.no_resi }}</span>
+            </div>
+            {% endif %}
           </div>
           <div class="md:text-right flex flex-col justify-end">
             <p class="text-[10px] sm:text-xs font-bold uppercase text-ink/50 mb-0.5">Total Pembayaran</p>

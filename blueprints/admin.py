@@ -134,25 +134,37 @@ def verify_order(order_id):
     
     if request.method == 'POST':
         new_status = request.form.get('status_pesanan')
+        no_resi = request.form.get('no_resi', '').strip()  # <--- Tangkap input Nomor Resi
+        
         try:
             with connection.cursor() as cursor:
-                cursor.execute("""
-                    UPDATE orders SET status_pesanan = %s WHERE id = %s
-                """, (new_status, order_id))
+                # Update status pesanan dan no_resi (jika diisi)
+                if no_resi:
+                    cursor.execute("""
+                        UPDATE orders SET status_pesanan = %s, no_resi = %s WHERE id = %s
+                    """, (new_status, no_resi, order_id))
+                else:
+                    cursor.execute("""
+                        UPDATE orders SET status_pesanan = %s WHERE id = %s
+                    """, (new_status, order_id))
 
-                # [NOTIFIKASI] Ambil pemilik pesanan & kirim notif update status
+                # Ambil pemilik pesanan & kirim notifikasi update status + resi
                 cursor.execute("SELECT user_id FROM orders WHERE id = %s", (order_id,))
                 ord_data = cursor.fetchone()
                 
                 if ord_data:
                     customer_id = ord_data['user_id']
+                    msg = f"Status pesanan #{order_id} Anda sekarang: {new_status}."
+                    if no_resi:
+                        msg += f" No. Resi: {no_resi}"
+                        
                     cursor.execute("""
                         INSERT INTO notifications (user_id, title, message, type, is_read)
                         VALUES (%s, %s, %s, %s, 0)
-                    """, (customer_id, "Status Pesanan Diperbarui", f"Status pesanan #{order_id} Anda sekarang: {new_status}.", "order"))
+                    """, (customer_id, "Status Pesanan Diperbarui", msg, "order"))
 
                 connection.commit()
-                flash(f'Status pesanan #{order_id} berhasil diperbarui menjadi {new_status}.', 'success')
+                flash(f'Status pesanan #{order_id} berhasil diperbarui!', 'success')
         except Exception as e:
             connection.rollback()
             flash(f'Terjadi kesalahan: {e}', 'danger')
@@ -187,7 +199,6 @@ def verify_order(order_id):
         return redirect(url_for('admin.manage_orders'))
         
     return render_template('admin/order_detail.html', order=order, items=items)
-
 
 @admin_bp.route('/products')
 @admin_required

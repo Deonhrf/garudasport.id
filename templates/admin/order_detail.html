@@ -146,11 +146,15 @@
         <div>
           <span class="bg-volt text-ink text-[10px] sm:text-xs font-bold px-2 py-0.5 uppercase border border-ink inline-block mb-1">Pesanan #{{ order.id }}</span>
           <h1 class="font-display text-xl sm:text-2xl uppercase">Detail & Verifikasi Pesanan</h1>
+          <!-- FORMAT WAKTU INDONESIA (WIB) -->
+          <p class="text-xs text-ink/60 font-medium mt-1">
+            Waktu Transaksi: <strong>{{ order.created_at.strftime('%d %B %Y - %H:%M WIB') if order.created_at else '-' }}</strong>
+          </p>
         </div>
         <div>
           <span class="inline-block px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase border-2 border-ink 
             {% if order.status_pesanan == 'Selesai' %} bg-volt text-ink 
-            {% elif order.status_pesanan == 'Menunggu Konfirmasi' %} bg-turf text-white 
+            {% elif order.status_pesanan == 'Menunggu Konfirmasi' or order.status_pesanan == 'Menunggu Konfirmasi Refund' %} bg-turf text-white 
             {% else %} bg-court text-white {% endif %}">
             Status: {{ order.status_pesanan }}
           </span>
@@ -168,7 +172,14 @@
         <div>
           <p class="font-bold uppercase text-[10px] sm:text-xs text-ink/50 mb-0.5">Alamat & Pengiriman</p>
           <p class="text-ink/80 leading-relaxed">{{ order.alamat_pengiriman }}</p>
-          <p class="mt-1.5 text-xs">Metode Pembayaran: <strong class="uppercase text-court">{{ order.metode_pembayaran }}</strong></p>
+          <p class="mt-1.5 text-xs">Kurir & Metode: <strong class="uppercase text-court">{{ order.kurir if order.kurir else 'Kurir Standard' }} | {{ order.metode_pembayaran }}</strong></p>
+          
+          <!-- TAMPILAN NOMOR RESI JIKA ADA -->
+          {% if order.no_resi %}
+          <div class="mt-2 inline-block bg-volt text-ink font-bold px-2 py-0.5 border border-ink text-xs">
+            📦 No. Resi: <span class="font-mono">{{ order.no_resi }}</span>
+          </div>
+          {% endif %}
         </div>
       </div>
 
@@ -217,13 +228,28 @@
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-ink/70 mb-1.5">Ubah Status Pesanan:</label>
             <select name="status_pesanan" class="w-full bg-paper border-2 border-ink p-2.5 sm:p-3 text-xs sm:text-sm font-bold uppercase focus:outline-none cursor-pointer">
-              <option value="Menunggu Konfirmasi" {% if order.status_pesanan == 'Menunggu Konfirmasi' %}selected{% endif %}>Menunggu Konfirmasi</option>
+              <option value="Menunggu Pembayaran" {% if order.status_pesanan == 'Menunggu Pembayaran' %}selected{% endif %}>Menunggu Pembayaran</option>
+              <option value="Menunggu Verifikasi" {% if order.status_pesanan == 'Menunggu Verifikasi' or order.status_pesanan == 'Menunggu Konfirmasi' %}selected{% endif %}>Menunggu Verifikasi</option>
               <option value="Diproses" {% if order.status_pesanan == 'Diproses' %}selected{% endif %}>Diproses (Pembayaran Valid)</option>
               <option value="Dikirim" {% if order.status_pesanan == 'Dikirim' %}selected{% endif %}>Dikirim (Dalam Perjalanan)</option>
               <option value="Selesai" {% if order.status_pesanan == 'Selesai' %}selected{% endif %}>Selesai</option>
               <option value="Dibatalkan" {% if order.status_pesanan == 'Dibatalkan' %}selected{% endif %}>Dibatalkan</option>
             </select>
           </div>
+
+          <!-- INPUT NOMOR RESI PENGIRIMAN -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-ink/70 mb-1.5">Nomor Resi Pengiriman (JNE / J&T / SiCepat):</label>
+            <input 
+              type="text" 
+              name="no_resi" 
+              value="{{ order.no_resi if order.no_resi else '' }}" 
+              placeholder="Contoh: JNE-8829103912" 
+              class="w-full bg-paper border-2 border-ink p-2.5 sm:p-3 text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-volt"
+            >
+            <p class="text-[10px] text-ink/60 mt-1">Isi nomor resi ini saat Anda mengubah status pesanan menjadi <strong>Dikirim</strong>.</p>
+          </div>
+
           <button type="submit" class="w-full bg-volt text-ink font-display uppercase tracking-wider py-3.5 sm:py-4 border-2 border-ink shadow-[3px_3px_0px_#121212] active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs sm:text-sm">
             Simpan & Perbarui Status &rarr;
           </button>
