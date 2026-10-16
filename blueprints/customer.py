@@ -209,6 +209,7 @@ def update_cart_item(cart_id):
     return redirect(url_for('customer.cart'))
 
 
+
 # --- 4. RIWAYAT PESANAN ---
 @customer_bp.route('/orders')
 def order_history():
@@ -226,7 +227,7 @@ def order_history():
             if selected_status == 'Semua':
                 sql = """
                     SELECT id, total_harga, metode_pembayaran, status_pesanan, 
-                           alamat_pengiriman, no_telepon, created_at, snap_token
+                           alamat_pengiriman, no_telepon, created_at, snap_token, no_resi
                     FROM orders
                     WHERE user_id = %s
                     ORDER BY created_at DESC
@@ -235,7 +236,7 @@ def order_history():
             else:
                 sql = """
                     SELECT id, total_harga, metode_pembayaran, status_pesanan, 
-                           alamat_pengiriman, no_telepon, created_at, snap_token
+                           alamat_pengiriman, no_telepon, created_at, snap_token, no_resi
                     FROM orders
                     WHERE user_id = %s AND status_pesanan = %s
                     ORDER BY created_at DESC
@@ -249,6 +250,7 @@ def order_history():
         connection.close()
         
     return render_template('customer/orders.html', orders=orders, client_key=MIDTRANS_CLIENT_KEY)
+
 
 
 # --- 4. RIWAYAT PESANAN (PEMBATALAN LANGSUNG UNTUK COD & UNPAID) ---
