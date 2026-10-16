@@ -141,18 +141,6 @@
           {% endfor %}
         </div>
 
-        <div class="border-b-2 border-ink/10 pb-3 space-y-2">
-          {% for item in cart_items %}
-          <div class="flex items-center justify-between text-xs sm:text-sm">
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-[10px] bg-ink text-volt px-1.5 py-0.5 border border-ink">x{{ item.quantity }}</span>
-              <span class="font-medium truncate max-w-[130px] sm:max-w-[160px]">{{ item.name }}</span>
-            </div>
-            <span class="font-bold">{{ (item.price * item.quantity) | rupiah }}</span>
-          </div>
-          {% endfor %}
-        </div>
-
         <div class="space-y-2 text-xs sm:text-sm border-b-2 border-ink/10 pb-3">
           <div class="flex justify-between text-ink/70">
             <span>Subtotal Produk:</span>
