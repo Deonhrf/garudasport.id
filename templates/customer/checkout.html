@@ -111,6 +111,36 @@
       <div class="bg-white border-2 border-ink p-5 sm:p-7 shadow-[6px_6px_0px_#121212] space-y-5">
         <h2 class="font-display text-lg sm:text-xl uppercase border-b-2 border-ink pb-2">Ringkasan Pembayaran</h2>
         
+        <div class="p-3.5 border-2 border-ink shadow-[3px_3px_0px_#121212] {% if subtotal_produk >= 500000 %}bg-volt text-ink{% else %}bg-paper text-ink{% endif %}">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🚚</span>
+            <div class="text-xs">
+              {% if subtotal_produk >= 500000 %}
+                <p class="font-display uppercase text-xs sm:text-sm">Selamat! Kamu Dapat Gratis Ongkir</p>
+                <p class="font-medium text-ink/80 mt-0.5">Total belanjaanmu sudah mencapai syarat gratis ongkir (di atas Rp 500.000).</p>
+              {% else %}
+                <p class="font-bold uppercase text-xs">Promo Gratis Ongkir Tersedia!</p>
+                <p class="font-medium text-ink/70 mt-0.5">
+                  Belanja minimal <strong>Rp 500.000</strong> untuk bebas ongkir. 
+                  Kurang <strong class="text-turf">{{ (500000 - subtotal_produk) | rupiah }}</strong> lagi!
+                </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="border-b-2 border-ink/10 pb-3 space-y-2">
+          {% for item in cart_items %}
+          <div class="flex items-center justify-between text-xs sm:text-sm">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-[10px] bg-ink text-volt px-1.5 py-0.5 border border-ink">x{{ item.quantity }}</span>
+              <span class="font-medium truncate max-w-[130px] sm:max-w-[160px]">{{ item.name }}</span>
+            </div>
+            <span class="font-bold">{{ (item.price * item.quantity) | rupiah }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
         <div class="border-b-2 border-ink/10 pb-3 space-y-2">
           {% for item in cart_items %}
           <div class="flex items-center justify-between text-xs sm:text-sm">
