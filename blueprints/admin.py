@@ -170,7 +170,7 @@ def verify_order(order_id):
             flash(f'Terjadi kesalahan: {e}', 'danger')
         finally:
             connection.close()
-        return redirect(url_for('admin.verify_order', order_id=order_id))
+        return redirect(url_for('admin.manage_orders'))
 
     order = None
     items = []
